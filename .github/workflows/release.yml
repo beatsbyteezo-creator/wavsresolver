@@ -67,7 +67,7 @@ jobs:
 
       - name: Verificar arquivos do app empacotado
         run: |
-          node -e "const asar=require('@electron/asar'); const files=asar.listPackage('release/build/win-unpacked/resources/app.asar', {}).map(path=>path.replace(/^[\\/]+/, '').replaceAll('\\\\', '/')); const required=['node_modules/electron-updater/package.json','main.cjs']; const missing=required.filter(path=>!files.includes(path)); if(missing.length) throw new Error('Arquivos ausentes no app.asar: '+missing.join(', ')); console.log('Arquivos verificados no app.asar: '+required.join(', '));"
+          node -e "const asar=require('@electron/asar'); const files=asar.listPackage('release/build/win-unpacked/resources/app.asar', {}).map(path=>path.replace(/^[\\/]+/, '').split(String.fromCharCode(92)).join('/')); const required=['node_modules/electron-updater/package.json','main.cjs']; const missing=required.filter(path=>!files.includes(path)); if(missing.length) throw new Error('Arquivos ausentes no app.asar: '+missing.join(', ')); console.log('Arquivos verificados no app.asar: '+required.join(', '));"
           if (!(Test-Path 'release/build/win-unpacked/resources/wavs.ico')) { throw "wavs.ico ausente no pacote." }
 
       - name: Publicar release para o atualizador
