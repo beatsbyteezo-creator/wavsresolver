@@ -6,9 +6,15 @@ on:
       - main
     paths:
       - .github/workflows/release.yml
-  create:
-    tags:
-      - 'v*'
+      - main.cjs
+      - preload.cjs
+      - renderer.js
+      - index.html
+      - styles.css
+      - wavs.ico
+      - package.json
+      - package-lock.json
+      - electron-builder.config.cjs
   workflow_dispatch:
 
 permissions:
@@ -29,6 +35,17 @@ jobs:
 
       - name: Instalar dependencias
         run: npm ci
+
+      - name: Calcular a proxima versao
+        run: |
+          $latest = gh release list --limit 1 --exclude-drafts --json tagName | ConvertFrom-Json
+          if (-not $latest -or -not $latest[0].tagName) { throw "Nao foi possivel ler a ultima release publicada." }
+          $baseVersion = $latest[0].tagName -replace '^v', ''
+          npm version $baseVersion --no-git-tag-version
+          npm version patch --no-git-tag-version
+          Write-Output "Versao desta compilacao: $(node -p "require('./package.json').version")"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Gerar instalador e publicar assets
         run: npm run release:win
