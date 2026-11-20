@@ -2631,7 +2631,7 @@ window.wavsResolver.onAppUpdateStatus((data) => {
   if (data.state === 'available') {
     downloadProgressBar.value = 0;
     downloadProgressBar.classList.remove('hidden');
-    setDownloadStatus(`Atualização${version} encontrada. Baixando em segundo plano.`, false, { kind: 'update' });
+    setDownloadStatus(`Atualização${version} disponível. Baixando em segundo plano.`, false, { kind: 'update' });
     clearTimeout(downloadStatusDismissTimer);
     downloadStatus.setAttribute('aria-busy', 'true');
   } else if (data.state === 'progress') {
