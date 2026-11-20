@@ -30,7 +30,14 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Gerar instalador e publicar release
+      - name: Gerar instalador e publicar assets
         run: npm run release:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publicar release para o atualizador
+        run: |
+          $appVersion = node -p "require('./package.json').version"
+          gh release edit "v$appVersion" --draft=false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
