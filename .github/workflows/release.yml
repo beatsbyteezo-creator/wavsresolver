@@ -69,6 +69,11 @@ jobs:
         run: |
           node -e "const asar=require('@electron/asar'); const files=asar.listPackage('release/build/win-unpacked/resources/app.asar', {}).map(path=>path.replace(/^[\\/]+/, '').split(String.fromCharCode(92)).join('/')); const required=['node_modules/electron-updater/package.json','main.cjs']; const missing=required.filter(path=>!files.includes(path)); if(missing.length) throw new Error('Arquivos ausentes no app.asar: '+missing.join(', ')); console.log('Arquivos verificados no app.asar: '+required.join(', '));"
           if (!(Test-Path 'release/build/win-unpacked/resources/wavs.ico')) { throw "wavs.ico ausente no pacote." }
+          $updateConfigPath = 'release/build/win-unpacked/resources/app-update.yml'
+          if (!(Test-Path $updateConfigPath)) { throw "app-update.yml ausente; o instalador nao podera verificar atualizacoes." }
+          $updateConfig = Get-Content $updateConfigPath -Raw
+          if ($updateConfig -notmatch 'provider:\s*github' -or $updateConfig -notmatch 'owner:\s*beatsbyteezo-creator' -or $updateConfig -notmatch 'repo:\s*wavsresolver') { throw "app-update.yml nao aponta para a release publica esperada." }
+          Write-Output "Configuracao do atualizador verificada: $updateConfigPath"
 
       - name: Publicar release para o atualizador
         run: |

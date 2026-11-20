@@ -19,6 +19,7 @@ const API_BASE = 'https://api.wavs.com';
 const API_CLIENT_SESSION = '116c0a73f6cae0c07cf9c9f99fc8bdcfd316ed31859f95fc16bd3a9ffb24561b';
 let mainWindow;
 let appUpdateCheckTimer;
+let lastAppUpdateErrorAt = 0;
 const reservedPaths = new Set();
 const requestedDownloads = new Map();
 const activeDownloads = new Map();
@@ -316,22 +317,45 @@ function sendAppUpdateStatus(data) {
   }
 }
 
+function reportAppUpdateError(error) {
+  const now = Date.now();
+  if (now - lastAppUpdateErrorAt < 15_000) return;
+  lastAppUpdateErrorAt = now;
+  console.warn('Falha ao buscar ou baixar uma atualização:', error.message || error);
+  sendAppUpdateStatus({ state: 'error' });
+}
+
 function startAppUpdater() {
-  if (!app.isPackaged || process.platform !== 'win32' || process.env.PORTABLE_EXECUTABLE_FILE || appUpdateCheckTimer) return;
+  if (!app.isPackaged || process.platform !== 'win32' || appUpdateCheckTimer) return;
+  if (process.env.PORTABLE_EXECUTABLE_FILE) {
+    sendAppUpdateStatus({ state: 'manual' });
+    return;
+  }
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.autoRunAppAfterInstall = true;
+  let initialCheckReported = false;
+  let checkInFlight = false;
   autoUpdater.on('update-available', (info) => sendAppUpdateStatus({ state: 'available', version: info.version }));
+  autoUpdater.on('update-not-available', (info) => {
+    if (initialCheckReported) return;
+    initialCheckReported = true;
+    sendAppUpdateStatus({ state: 'current', version: info.version || app.getVersion() });
+  });
   autoUpdater.on('download-progress', (progress) => sendAppUpdateStatus({ state: 'progress', percent: progress.percent }));
   autoUpdater.on('update-downloaded', (info) => sendAppUpdateStatus({ state: 'downloaded', version: info.version }));
-  autoUpdater.on('error', (error) => console.warn('Falha ao buscar ou baixar uma atualização:', error.message || error));
+  autoUpdater.on('error', reportAppUpdateError);
 
   const checkForUpdates = () => {
-    autoUpdater.checkForUpdates().catch((error) => console.warn('Não foi possível verificar atualizações:', error.message || error));
+    if (checkInFlight) return;
+    checkInFlight = true;
+    autoUpdater.checkForUpdates()
+      .catch(reportAppUpdateError)
+      .finally(() => { checkInFlight = false; });
   };
   const initialCheck = setTimeout(checkForUpdates, 3500);
   initialCheck.unref?.();
-  appUpdateCheckTimer = setInterval(checkForUpdates, 6 * 60 * 60 * 1000);
+  appUpdateCheckTimer = setInterval(checkForUpdates, 15 * 60 * 1000);
   appUpdateCheckTimer.unref?.();
 }
 

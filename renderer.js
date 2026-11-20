@@ -8,6 +8,7 @@ const cancelDownloadButton = document.querySelector('#cancel-download');
 const dismissDownloadStatusButton = document.querySelector('#dismiss-download-status');
 const downloadArtwork = document.querySelector('#download-artwork');
 const panel = document.querySelector('#pack-panel');
+const appShell = document.querySelector('.shell');
 const loadButton = document.querySelector('#load-button');
 const sampleDestinationPath = document.querySelector('#sample-destination-path');
 const chooseSampleDestinationButton = document.querySelector('#choose-sample-destination');
@@ -1075,7 +1076,7 @@ async function openCreatorProfile(creator, page = 1, updateHistory = true) {
   const isExistingProfile = Boolean(creatorProfile && String(creatorProfile.creator.id) === String(creator.id));
   if (updateHistory && !isExistingProfile) {
     if (history.state?.wavsResolverPackView || history.state?.wavsResolverCreatorView) {
-      history.replaceState({ ...history.state, wavsResolverScrollY: window.scrollY }, '', location.hash || '#top');
+      history.replaceState({ ...history.state, wavsResolverScrollY: appShell.scrollTop }, '', location.hash || '#top');
     }
     if (!history.state?.wavsResolverPackView || history.state?.wavsResolverCreatorView) {
       history.replaceState({ ...history.state, wavsResolverPreviousView: capturePreviousView() }, '', location.hash || '#top');
@@ -1120,7 +1121,7 @@ async function openCreatorProfile(creator, page = 1, updateHistory = true) {
       const restoreY = history.state?.wavsResolverCreatorView
         ? Math.max(0, Number(history.state.wavsResolverScrollY) || 0)
         : 0;
-      window.scrollTo({ top: restoreY, behavior: 'smooth' });
+      appShell.scrollTo({ top: restoreY, behavior: 'smooth' });
     }
   }
 }
@@ -1440,7 +1441,7 @@ function setCatalogView(view) {
   resetCatalogFilters();
   updateCatalogNavigation();
   updateBackButton();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  appShell.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function returnToHome() {
@@ -1460,7 +1461,7 @@ function capturePreviousView() {
     type: 'catalog',
     catalogView,
     sidebarSection,
-    scrollY: window.scrollY
+    scrollY: appShell.scrollTop
   };
 }
 
@@ -1472,7 +1473,7 @@ function navigateBack() {
   if (creatorProfile || creatorProfileLoading || creatorProfileError || currentPack) {
     clearPackView();
     closeCreatorProfile();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    appShell.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
@@ -1486,7 +1487,7 @@ function navigateHome() {
   resetCatalogFilters();
   updateCatalogNavigation();
   homeNavigationButton.blur();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  appShell.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -1517,7 +1518,7 @@ window.addEventListener('popstate', (event) => {
   }
   closeCreatorProfile();
   renderCatalog();
-  requestAnimationFrame(() => window.scrollTo(0, Math.max(0, Number(previousView?.scrollY) || 0)));
+  requestAnimationFrame(() => appShell.scrollTo(0, Math.max(0, Number(previousView?.scrollY) || 0)));
 });
 
 async function openPack(link, scrollToPack = false, updateHistory = true) {
@@ -1553,7 +1554,7 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
       if (history.state?.wavsResolverPackView) {
         history.replaceState(packState, '', `#pack-${result.packId}`);
       } else {
-        history.replaceState({ ...history.state, wavsResolverPreviousView: previousView, wavsResolverScrollY: window.scrollY }, '');
+        history.replaceState({ ...history.state, wavsResolverPreviousView: previousView, wavsResolverScrollY: appShell.scrollTop }, '');
         history.pushState(packState, '', `#pack-${result.packId}`);
       }
     }
@@ -1567,7 +1568,7 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
       const restoreY = !updateHistory && history.state?.wavsResolverPackView
         ? Math.max(0, Number(history.state.wavsResolverScrollY) || 0)
         : 0;
-      window.scrollTo({ top: restoreY, behavior: 'smooth' });
+      appShell.scrollTo({ top: restoreY, behavior: 'smooth' });
     }
   } catch (error) {
     if (requestVersion !== packRequestVersion) return;
@@ -2645,6 +2646,14 @@ window.wavsResolver.onAppUpdateStatus((data) => {
     downloadProgressBar.classList.add('hidden');
     setDownloadStatus(`Atualização${version} pronta. Será instalada ao fechar o app.`, true, { kind: 'update' });
     downloadStatus.setAttribute('aria-busy', 'false');
+  } else if (data.state === 'current') {
+    setDownloadStatus(`WavsResolver atualizado${version}.`, true, { kind: 'update' });
+  } else if (data.state === 'error') {
+    downloadProgressBar.classList.add('hidden');
+    setDownloadStatus('Não foi possível verificar atualizações. Confira sua conexão e tente novamente mais tarde.', false, { kind: 'update' });
+    downloadStatus.setAttribute('aria-busy', 'false');
+  } else if (data.state === 'manual') {
+    setDownloadStatus('Esta versão portátil precisa ser atualizada manualmente.', false, { kind: 'update' });
   }
 });
 updateSampleDownloadDirectory().catch((error) => {

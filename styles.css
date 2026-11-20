@@ -2790,3 +2790,32 @@ body[data-theme="light"] .download-status.is-update #download-message { color: #
 }
 
 
+
+
+/* Keep the fixed preview dock outside the scrollable content area. */
+html, body { width: 100%; height: 100%; overflow: hidden; }
+.app-layout {
+  height: 100dvh;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+  transition: height .32s cubic-bezier(.22, 1, .36, 1);
+}
+.app-sidebar { height: 100%; min-height: 0; }
+.shell {
+  height: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+  padding-bottom: 24px !important;
+}
+body.player-active { --player-dock-reserved-height: 108px; }
+body.player-active .app-layout { height: calc(100dvh - var(--player-dock-reserved-height)); }
+@media (max-width: 800px) {
+  .app-layout { grid-template-rows: auto minmax(0, 1fr); }
+  .app-sidebar { height: auto; }
+  body.player-active { --player-dock-reserved-height: 190px; }
+}
