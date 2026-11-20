@@ -47,6 +47,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Criar release antes do upload
+        run: |
+          $appVersion = node -p "require('./package.json').version"
+          gh release create "v$appVersion" --draft --title "$appVersion" --notes "Instalador Windows do WavsResolver e arquivos de atualizacao automatica."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Gerar instalador e publicar assets
         run: npm run release:win
         env:
