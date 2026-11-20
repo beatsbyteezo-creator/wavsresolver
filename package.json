@@ -1,0 +1,72 @@
+{
+  "name": "wavsresolver",
+  "productName": "WavsResolver",
+  "author": "WavsResolver",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beatsbyteezo-creator/wavsresolver.git"
+  },
+  "version": "1.0.3",
+  "private": true,
+  "description": "App pessoal para explorar e baixar samples pelo WAVS oficial.",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish never",
+    "build:portable": "electron-builder --win portable --x64 --publish never",
+    "release:win": "electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish always"
+  },
+  "build": {
+    "appId": "com.nyoandwhite.wavsresolver",
+    "asar": true,
+    "directories": {
+      "output": "release/build"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "renderer.js",
+      "index.html",
+      "styles.css",
+      "wavs.ico",
+      "README.txt",
+      "!Downloads/**",
+      "!release/**",
+      "!node_modules/**"
+    ],
+    "extraResources": [
+      {
+        "from": "wavs.ico",
+        "to": "wavs.ico"
+      }
+    ],
+    "artifactName": "WavsResolver-${version}-Windows-${arch}.${ext}",
+    "win": {
+      "icon": "wavs.ico",
+      "compression": "maximum",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "WavsResolver"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.2.2",
+    "electron-builder": "^26.18.0"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
+  }
+}

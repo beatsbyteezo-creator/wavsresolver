@@ -1,0 +1,11 @@
+node_modules/
+.electron-cache/
+release/
+Downloads/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+settings.json
