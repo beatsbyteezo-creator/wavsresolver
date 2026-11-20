@@ -1,21 +1,14 @@
 name: Publicar atualizacao do WavsResolver
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/release.yml
-      - main.cjs
-      - preload.cjs
-      - renderer.js
-      - index.html
-      - styles.css
-      - wavs.ico
-      - package.json
-      - package-lock.json
-      - electron-builder.config.cjs
   workflow_dispatch:
+    inputs:
+      release_notes:
+        description: "Notas que aparecerao no card de atualizacao"
+        required: true
+        type: string
+        default: "Melhorias e correcoes."
+
 
 permissions:
   contents: write
@@ -50,15 +43,18 @@ jobs:
       - name: Criar release antes do upload
         run: |
           $appVersion = node -p "require('./package.json').version"
+          $releaseNotes = $env:RELEASE_NOTES
+          if ([string]::IsNullOrWhiteSpace($releaseNotes)) { throw "Informe as notas desta versao antes de publicar." }
           $releases = gh release list --limit 100 --json tagName,isDraft | ConvertFrom-Json
           $draftExists = @($releases | Where-Object { $_.tagName -eq "v$appVersion" -and $_.isDraft }).Count -gt 0
           if ($draftExists) {
             gh release delete "v$appVersion" --yes
             if ($LASTEXITCODE -ne 0) { throw "Nao foi possivel limpar o rascunho anterior." }
           }
-          gh release create "v$appVersion" --draft --title "$appVersion" --notes "Instalador Windows do WavsResolver e arquivos de atualizacao automatica."
+          gh release create "v$appVersion" --draft --title "$appVersion" --notes $releaseNotes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
 
       - name: Gerar instalador e publicar assets
         run: npm run release:win

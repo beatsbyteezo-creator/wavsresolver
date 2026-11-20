@@ -9,6 +9,14 @@ const dismissDownloadStatusButton = document.querySelector('#dismiss-download-st
 const downloadArtwork = document.querySelector('#download-artwork');
 const panel = document.querySelector('#pack-panel');
 const appShell = document.querySelector('.shell');
+const appVersionLabel = document.querySelector('#app-version');
+const appUpdateOverlay = document.querySelector('#app-update-overlay');
+const appUpdateVersion = document.querySelector('#app-update-version');
+const appUpdateNotes = document.querySelector('#app-update-notes-text');
+const appUpdateMessage = document.querySelector('#app-update-message');
+const appUpdateProgress = document.querySelector('#app-update-progress');
+const appUpdateLaterButton = document.querySelector('#app-update-later');
+const appUpdateNowButton = document.querySelector('#app-update-now');
 const loadButton = document.querySelector('#load-button');
 const sampleDestinationPath = document.querySelector('#sample-destination-path');
 const chooseSampleDestinationButton = document.querySelector('#choose-sample-destination');
@@ -65,6 +73,7 @@ let filteredCatalogPacks = [];
 let favoritePacks = [];
 let catalogView = 'explore';
 let sidebarSection = 'home';
+let appUpdateCardDismissed = false;
 let featuredPackIndex = 0;
 const activeDownloadJobs = new Map();
 const downloadPresentations = new Map();
@@ -2628,33 +2637,72 @@ window.wavsResolver.onDownloadFinished((data) => {
   setDownloadStatus(name, data.state === 'completed', presentation);
 });
 window.wavsResolver.onAppUpdateStatus((data) => {
-  const version = data.version ? ` ${data.version}` : '';
   if (data.state === 'available') {
-    downloadProgressBar.value = 0;
-    downloadProgressBar.classList.remove('hidden');
-    setDownloadStatus(`Atualização${version} disponível. Baixando em segundo plano.`, false, { kind: 'update' });
-    clearTimeout(downloadStatusDismissTimer);
-    downloadStatus.setAttribute('aria-busy', 'true');
+    const version = data.version || 'nova';
+    const notes = String(data.releaseNotes || '').trim() || 'Melhorias e correções no WavsResolver.';
+    appUpdateCardDismissed = false;
+    appUpdateVersion.textContent = 'Versão ' + version;
+    appUpdateNotes.textContent = notes;
+    appUpdateProgress.value = 0;
+    appUpdateMessage.textContent = 'Baixando a atualização em segundo plano…';
+    appUpdateNowButton.disabled = true;
+    appUpdateNowButton.textContent = 'Baixando…';
+    appUpdateOverlay.classList.remove('hidden');
+    appUpdateOverlay.setAttribute('aria-hidden', 'false');
+    appUpdateLaterButton.focus();
   } else if (data.state === 'progress') {
-    downloadProgressBar.value = Math.max(0, Math.min(100, Number(data.percent) || 0));
-    downloadProgressBar.classList.remove('hidden');
-    setDownloadStatus(`Baixando atualização${version} · ${Math.round(downloadProgressBar.value)}%`, false, { kind: 'update' });
-    clearTimeout(downloadStatusDismissTimer);
-    downloadStatus.setAttribute('aria-busy', 'true');
+    const percent = Math.max(0, Math.min(100, Number(data.percent) || 0));
+    appUpdateProgress.value = percent;
+    appUpdateMessage.textContent = 'Baixando a atualização — ' + Math.round(percent) + '%';
   } else if (data.state === 'downloaded') {
-    downloadProgressBar.value = 100;
-    downloadProgressBar.classList.add('hidden');
-    setDownloadStatus(`Atualização${version} pronta. Será instalada ao fechar o app.`, true, { kind: 'update' });
-    downloadStatus.setAttribute('aria-busy', 'false');
-  } else if (data.state === 'current') {
-    setDownloadStatus(`WavsResolver atualizado${version}.`, true, { kind: 'update' });
+    if (!appUpdateCardDismissed) {
+      appUpdateProgress.value = 100;
+      appUpdateMessage.textContent = 'Atualização pronta. O app será reiniciado para aplicar.';
+      appUpdateNowButton.disabled = false;
+      appUpdateNowButton.textContent = 'Atualizar agora';
+    }
   } else if (data.state === 'error') {
-    downloadProgressBar.classList.add('hidden');
-    setDownloadStatus('Não foi possível verificar atualizações. Confira sua conexão e tente novamente mais tarde.', false, { kind: 'update' });
-    downloadStatus.setAttribute('aria-busy', 'false');
+    if (!appUpdateOverlay.classList.contains('hidden') && !appUpdateCardDismissed) {
+      appUpdateMessage.textContent = 'Não consegui baixar a atualização. Vou tentar novamente em instantes.';
+      appUpdateNowButton.disabled = true;
+      appUpdateNowButton.textContent = 'Aguardando…';
+    } else {
+      setDownloadStatus('Não foi possível verificar atualizações. Confira sua conexão e tente novamente mais tarde.', false, { kind: 'update' });
+    }
   } else if (data.state === 'manual') {
     setDownloadStatus('Esta versão portátil precisa ser atualizada manualmente.', false, { kind: 'update' });
   }
+});
+
+function dismissAppUpdateCard() {
+  appUpdateCardDismissed = true;
+  appUpdateOverlay.classList.add('hidden');
+  appUpdateOverlay.setAttribute('aria-hidden', 'true');
+}
+
+appUpdateLaterButton.addEventListener('click', dismissAppUpdateCard);
+appUpdateNowButton.addEventListener('click', async () => {
+  if (appUpdateNowButton.disabled) return;
+  appUpdateNowButton.disabled = true;
+  appUpdateNowButton.textContent = 'Reiniciando…';
+  appUpdateMessage.textContent = 'Fechando o app e aplicando a atualização…';
+  try {
+    const result = await window.wavsResolver.installAppUpdate();
+    if (!result?.ok) throw new Error(result?.message || 'A atualização ainda não está pronta.');
+  } catch (error) {
+    appUpdateMessage.textContent = error.message || 'Não consegui iniciar a atualização.';
+    appUpdateNowButton.disabled = false;
+    appUpdateNowButton.textContent = 'Tentar novamente';
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !appUpdateOverlay.classList.contains('hidden')) dismissAppUpdateCard();
+});
+window.wavsResolver.getAppVersion().then((version) => {
+  appVersionLabel.textContent = `v${version}`;
+}).catch(() => {
+  appVersionLabel.textContent = 'Versão indisponível';
 });
 updateSampleDownloadDirectory().catch((error) => {
   sampleDestinationPath.textContent = 'Pasta indisponível';

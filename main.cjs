@@ -20,6 +20,8 @@ const API_CLIENT_SESSION = '116c0a73f6cae0c07cf9c9f99fc8bdcfd316ed31859f95fc16bd
 let mainWindow;
 let appUpdateCheckTimer;
 let lastAppUpdateErrorAt = 0;
+let appUpdateAvailable = false;
+let appUpdateDownloaded = false;
 const reservedPaths = new Set();
 const requestedDownloads = new Map();
 const activeDownloads = new Map();
@@ -321,6 +323,8 @@ function reportAppUpdateError(error) {
   const now = Date.now();
   if (now - lastAppUpdateErrorAt < 15_000) return;
   lastAppUpdateErrorAt = now;
+  appUpdateAvailable = false;
+  appUpdateDownloaded = false;
   console.warn('Falha ao buscar ou baixar uma atualização:', error.message || error);
   sendAppUpdateStatus({ state: 'error' });
 }
@@ -332,32 +336,49 @@ function startAppUpdater() {
     return;
   }
   autoUpdater.autoDownload = true;
-  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.autoRunAppAfterInstall = true;
   let initialCheckReported = false;
   let checkInFlight = false;
-  autoUpdater.on('update-available', (info) => sendAppUpdateStatus({ state: 'available', version: info.version }));
+  autoUpdater.on('update-available', (info) => {
+    appUpdateAvailable = true;
+    appUpdateDownloaded = false;
+    const releaseNotes = Array.isArray(info.releaseNotes)
+      ? info.releaseNotes.map((item) => item?.note).filter(Boolean).join('\n\n')
+      : typeof info.releaseNotes === 'string' ? info.releaseNotes : '';
+    sendAppUpdateStatus({ state: 'available', version: info.version, releaseNotes: releaseNotes.slice(0, 12000) });
+  });
   autoUpdater.on('update-not-available', (info) => {
     if (initialCheckReported) return;
     initialCheckReported = true;
     sendAppUpdateStatus({ state: 'current', version: info.version || app.getVersion() });
   });
   autoUpdater.on('download-progress', (progress) => sendAppUpdateStatus({ state: 'progress', percent: progress.percent }));
-  autoUpdater.on('update-downloaded', (info) => sendAppUpdateStatus({ state: 'downloaded', version: info.version }));
+  autoUpdater.on('update-downloaded', (info) => {
+    appUpdateDownloaded = true;
+    sendAppUpdateStatus({ state: 'downloaded', version: info.version });
+  });
   autoUpdater.on('error', reportAppUpdateError);
 
   const checkForUpdates = () => {
-    if (checkInFlight) return;
+    if (checkInFlight || appUpdateAvailable || appUpdateDownloaded) return;
     checkInFlight = true;
     autoUpdater.checkForUpdates()
       .catch(reportAppUpdateError)
       .finally(() => { checkInFlight = false; });
   };
-  const initialCheck = setTimeout(checkForUpdates, 3500);
+  const initialCheck = setTimeout(checkForUpdates, 1000);
   initialCheck.unref?.();
-  appUpdateCheckTimer = setInterval(checkForUpdates, 15 * 60 * 1000);
+  appUpdateCheckTimer = setInterval(checkForUpdates, 60 * 1000);
   appUpdateCheckTimer.unref?.();
 }
+
+ipcMain.handle('get-app-version', () => app.getVersion());
+ipcMain.handle('install-app-update', () => {
+  if (!appUpdateDownloaded) return { ok: false, message: 'A atualização ainda não terminou de baixar.' };
+  autoUpdater.quitAndInstall(false, true);
+  return { ok: true };
+});
 
 ipcMain.handle('load-pack', async (_event, link) => {
   const packId = getPackId(link);

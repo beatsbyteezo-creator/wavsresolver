@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('wavsResolver', {
   getFavoritePacks: () => ipcRenderer.invoke('get-favorite-packs'),
   toggleFavoritePack: (pack) => ipcRenderer.invoke('toggle-favorite-pack', pack),
   getAppPreferences: () => ipcRenderer.invoke('get-app-preferences'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  installAppUpdate: () => ipcRenderer.invoke('install-app-update'),
   saveAppPreference: (key, value) => ipcRenderer.invoke('save-app-preference', key, value),
   downloadSamplePreview: (url, title, tempo, author, folderName) => ipcRenderer.invoke('download-sample-preview', url, title, tempo, author, folderName),
   cancelSamplePreviewDownload: (downloadId) => ipcRenderer.invoke('cancel-sample-preview-download', downloadId),
