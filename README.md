@@ -1,32 +1,30 @@
 # WavsResolver
 
-Aplicativo Windows para explorar packs publicos do WAVS, ouvir previews e baixar arquivos MP3 disponibilizados pelo servico.
+Aplicativo Windows para explorar packs públicos do WAVS, ouvir previews e baixar arquivos MP3.
 
 ## Instalar
 
-Baixe o instalador `WavsResolver-<versao>-Windows-x64.exe` na aba Releases do repositorio e execute-o. A instalacao e por usuario e cria atalhos no Menu Iniciar e na area de trabalho. O app precisa de conexao com a internet para acessar o catalogo WAVS.
+Baixe o instalador Windows x64 na página de [Releases](https://github.com/beatsbyteezo-creator/wavsresolver/releases/latest) e execute-o. A instalação é por usuário e cria atalhos no Menu Iniciar e na área de trabalho. O app precisa de internet para acessar o catálogo WAVS.
 
-Quem ainda usa a versao portatil 1.0.3 precisa instalar esta primeira versao uma vez. Depois, novas versoes sao baixadas pelo app e instaladas quando ele for fechado.
+Quem usa a versão portátil precisa instalar o instalador uma vez. Depois disso, o app verifica atualizações ao abrir, baixa as novas versões automaticamente e as instala ao fechar o app.
 
-O instalador nao e assinado digitalmente; o Windows pode exibir um aviso na primeira execucao.
+O instalador ainda não tem assinatura digital; o Windows pode exibir um aviso na primeira execução.
 
 ## Recursos
 
-- Explorar packs recentes, filtrar por genero e periodo e ordenar resultados.
-- Pesquisar packs, samples e criadores; abrir perfis publicos.
+- Explorar packs recentes, filtrar por gênero e período e ordenar resultados.
+- Pesquisar packs, samples e criadores; abrir perfis públicos.
 - Salvar packs favoritos neste computador.
-- Reproduzir previews com waveform, controle de volume, repeticao e atalhos.
+- Reproduzir previews com waveform, controle de volume, repetição e atalhos.
 - Baixar previews MP3 individualmente ou baixar um pack inteiro.
-- Alterar tema e manter preferencias entre execucoes.
+- Alterar tema e manter preferências entre execuções.
 
-Catalogo, metadados e previews dependem da disponibilidade e das regras atuais do WAVS.
+Catálogo, metadados e previews dependem da disponibilidade e das regras atuais do WAVS.
 
-## Releases
+## Atualizações
 
-O workflow do GitHub Actions gera e publica uma release do Windows quando uma tag `v*` e enviada. A release inclui o instalador e os metadados usados pelo atualizador automatico.
-
-Para preparar uma versao, atualize o campo `version` em `package.json`, sincronize `package-lock.json`, crie uma tag igual a versao (por exemplo, `v1.0.4`) e envie a tag ao GitHub.
+O GitHub Actions gera um instalador e uma release quando o código do app é atualizado na branch principal. A versão é incrementada automaticamente. Também é possível iniciar o workflow pela aba **Actions** do repositório.
 
 ## Desenvolvimento
 
-Requer Node.js 22 ou superior. Execute `npm ci` e depois `npm start` para abrir o app. Para gerar localmente o instalador sem publica-lo, execute `npm run build:win`.
+Requer Node.js 22 ou superior. Execute `npm ci` e depois `npm start` para abrir o app. Para gerar localmente o instalador sem publicá-lo, execute `npm run build:win`.
