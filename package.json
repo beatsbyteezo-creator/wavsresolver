@@ -31,8 +31,7 @@
       "wavs.ico",
       "README.txt",
       "!Downloads/**",
-      "!release/**",
-      "!node_modules/**"
+      "!release/**"
     ],
     "extraResources": [
       {
