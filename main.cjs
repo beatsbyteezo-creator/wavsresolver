@@ -34,8 +34,12 @@ function getAppIconPath() {
   return path.join(app.isPackaged ? process.resourcesPath : __dirname, 'wavs.ico');
 }
 
+function getAppWindowIconPath() {
+  return path.join(app.isPackaged ? process.resourcesPath : __dirname, 'wavs.png');
+}
+
 function getAppIcon() {
-  const icon = nativeImage.createFromPath(getAppIconPath());
+  const icon = nativeImage.createFromPath(getAppWindowIconPath());
   if (icon.isEmpty()) throw new Error(`Não foi possível carregar o ícone do app: ${getAppIconPath()}`);
   return icon;
 }
@@ -296,7 +300,7 @@ function createWindow() {
   const appIcon = getAppIcon();
   mainWindow = new BrowserWindow({
     width: 1600, height: 1000, minWidth: 640, minHeight: 560, backgroundColor: '#000000', title: 'WavsResolver', autoHideMenuBar: true,
-    icon: getAppIconPath(),
+    icon: getAppWindowIconPath(),
     webPreferences: { partition: 'persist:wavs-personal', preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true }
   });
   mainWindow.setIcon(appIcon);
@@ -957,3 +961,4 @@ app.whenReady().then(() => {
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 
+\n

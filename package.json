@@ -29,6 +29,7 @@
       "index.html",
       "styles.css",
       "wavs.ico",
+      "wavs.png",
       "README.txt",
       "!Downloads/**",
       "!release/**"
@@ -37,6 +38,10 @@
       {
         "from": "wavs.ico",
         "to": "wavs.ico"
+      },
+      {
+        "from": "wavs.png",
+        "to": "wavs.png"
       }
     ],
     "artifactName": "WavsResolver-${version}-Windows-${arch}.${ext}",
@@ -69,3 +74,4 @@
     "electron-updater": "^6.8.11"
   }
 }
+\n
