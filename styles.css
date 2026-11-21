@@ -3010,4 +3010,20 @@ body[data-theme="light"] .sidebar-version { color: rgba(64,60,72,.55); }
   .app-update-overlay, .app-update-card, .app-update-actions button { animation: none; transition: none; }
 }
 
+/* Keep scrolling and live waveform painting inexpensive on the GPU. */
+.app-sidebar,
+.topbar-destination,
+.pack-panel,
+.creator-profile,
+.bottom-player,
+.creator-search-suggestions,
+.custom-select-menu {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.bottom-player-waveform,
+.sample-waveform {
+  filter: none !important;
+}
+
 
