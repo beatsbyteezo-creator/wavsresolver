@@ -4,18 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: "Vers�o desta publica��o"
+        description: "Versão desta publicação"
         required: true
         type: string
         default: "1.2.4"
       release_notes:
-        description: "Notas que aparecer�o no card de atualiza��o"
+        description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
           - Refinamentos visuais nos cards e nas capas dos packs.
-          - Ajustes no player, nas pr�vias e no tema claro.
+          - Ajustes no player, nas prévias e no tema claro.
 
 permissions:
   contents: write
@@ -74,7 +74,7 @@ jobs:
         run: |
           node -e "const asar=require('@electron/asar'); const files=asar.listPackage('release/build/win-unpacked/resources/app.asar', {}).map(path=>path.replace(/^[\\/]+/, '').split(String.fromCharCode(92)).join('/')); const required=['node_modules/electron-updater/package.json','main.cjs']; const missing=required.filter(path=>!files.includes(path)); if(missing.length) throw new Error('Arquivos ausentes no app.asar: '+missing.join(', ')); console.log('Arquivos verificados no app.asar: '+required.join(', '));"
           if (!(Test-Path 'release/build/win-unpacked/resources/wavs.ico')) { throw "wavs.ico ausente no pacote." }
-          if (!(Test-Path 'release/build/win-unpacked/resources/wavs.png')) { throw "wavs.png ausente; o �cone da janela n�o estar� dispon�vel." }
+          if (!(Test-Path 'release/build/win-unpacked/resources/wavs.png')) { throw "wavs.png ausente; o ícone da janela não estará disponível." }
           $updateConfigPath = 'release/build/win-unpacked/resources/app-update.yml'
           if (!(Test-Path $updateConfigPath)) { throw "app-update.yml ausente; o instalador nao podera verificar atualizacoes." }
           $updateConfig = Get-Content $updateConfigPath -Raw
@@ -87,4 +87,3 @@ jobs:
           gh release edit "v$appVersion" --draft=false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
