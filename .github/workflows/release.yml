@@ -7,15 +7,15 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.2"
+        default: "1.2.3"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - Rolagem mais estável e fluida na home e nos packs.
-          - Menos efeitos gráficos pesados e áudio sincronizado à tela.
+          - Rolagem mais consistente e fluida ao usar o mouse fora da área principal.
+          - Ajustes de estabilidade na navegação.
 
 permissions:
   contents: write
