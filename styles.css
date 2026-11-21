@@ -2754,16 +2754,9 @@ body.pack-view-active .sample-waveform:hover {
   filter: none;
 }
 
-/* Short, compositor-friendly reveals follow the display's normal frame cadence. */
-.catalog-card.home-reveal-pending {
-  opacity: 0;
-  transform: translate3d(0, 8px, 0);
-  transition: opacity 220ms ease-out, transform 220ms ease-out;
-}
-.catalog-card.home-reveal-pending.home-revealed {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-}
+/* Repeat the entrance motion as cards enter and leave view. */
+.catalog-card.home-reveal-pending { opacity: 0; transform: translate3d(0, 8px, 0); transition: opacity 220ms ease-out, transform 220ms ease-out; }
+.catalog-card.home-reveal-pending.home-revealed { opacity: 1; transform: translate3d(0, 0, 0); }
 .recent-list {
   scroll-behavior: smooth;
   scroll-padding-inline: 2px;
@@ -3025,5 +3018,6 @@ body[data-theme="light"] .sidebar-version { color: rgba(64,60,72,.55); }
 .sample-waveform {
   filter: none !important;
 }
+
 
 
