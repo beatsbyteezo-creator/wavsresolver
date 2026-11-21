@@ -7,15 +7,15 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.4"
+        default: "1.2.5"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
+          - Correção de acentos, símbolos e ícones que apareciam como interrogações.
           - Refinamentos visuais nos cards e nas capas dos packs.
-          - Ajustes no player, nas prévias e no tema claro.
 
 permissions:
   contents: write
