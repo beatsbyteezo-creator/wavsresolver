@@ -12,90 +12,90 @@
 </head>
 <body data-theme="dark">
   <div class="app-layout">
-    <aside class="app-sidebar" aria-label="Navegação principal">
-      <a class="sidebar-brand" href="#top" aria-label="WavsResolver, início"><span class="brand-mark">W</span><span>Wavs<span class="brand-light">Resolver</span></span></a>
+    <aside class="app-sidebar" aria-label="Navega��o principal">
+      <a class="sidebar-brand" href="#top" aria-label="WavsResolver, in�cio"><span class="brand-mark">W</span><span>Wavs<span class="brand-light">Resolver</span></span></a>
       <nav class="sidebar-navigation">
         <button id="nav-home" class="sidebar-link sidebar-home-link is-active" type="button" aria-current="page"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg></span>Home</button>
-        <button id="nav-explore" class="sidebar-link" type="button"><span aria-hidden="true">⌕</span>Explorar</button>
-        <button id="nav-favorites" class="sidebar-link" type="button"><span aria-hidden="true">♡</span>Packs salvos<span id="favorites-count" class="sidebar-count">0</span></button>
+        <button id="nav-explore" class="sidebar-link" type="button"><span aria-hidden="true">?</span>Explorar</button>
+        <button id="nav-favorites" class="sidebar-link" type="button"><span aria-hidden="true">?</span>Packs salvos<span id="favorites-count" class="sidebar-count">0</span></button>
         <button id="theme-toggle" class="sidebar-link theme-toggle" type="button" aria-label="Mudar para tema claro" aria-pressed="false"><span aria-hidden="true">&#9788;</span>Tema claro</button>
       </nav>
-      <div class="sidebar-note"><span class="sidebar-note-dot"></span><span class="sidebar-source">Catálogo público WAVS</span></div>
-      <div id="app-version" class="sidebar-version">Versão —</div>
+      <div class="sidebar-note"><span class="sidebar-note-dot"></span><span class="sidebar-source">Cat�logo p�blico WAVS</span></div>
+      <div id="app-version" class="sidebar-version">Vers�o -</div>
     </aside>
     <main class="shell">
     <header class="topbar">
       <div class="topbar-brand">
-        <button id="back-button" class="back-button" type="button" aria-label="Voltar à página anterior" title="Voltar à página anterior" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"></path></svg></button>
-        <a id="home-link" class="brand" href="#top" aria-label="Voltar à home"><span class="brand-mark">W</span><span>Wavs<span class="brand-light">Resolver</span></span></a>
+        <button id="back-button" class="back-button" type="button" aria-label="Voltar � p�gina anterior" title="Voltar � p�gina anterior" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"></path></svg></button>
+        <a id="home-link" class="brand" href="#top" aria-label="Voltar � home"><span class="brand-mark">W</span><span>Wavs<span class="brand-light">Resolver</span></span></a>
       </div>
       
-          <div class="topbar-destination"><div><span class="destination-label">PASTA DAS SAMPLES</span><span id="sample-destination-path" class="destination-path">Carregando pasta…</span></div><button id="choose-sample-destination" class="destination-button" type="button">Alterar pasta</button></div>
+          <div class="topbar-destination"><div><span class="destination-label">PASTA DAS SAMPLES</span><span id="sample-destination-path" class="destination-path">Carregando pasta.</span></div><button id="choose-sample-destination" class="destination-button" type="button">Alterar pasta</button></div>
     </header>
     <section id="link-access" class="link-access" aria-label="Abrir pack por link">
       <form id="pack-form" class="link-form">
-        <div class="link-form-heading"><span class="link-form-icon" aria-hidden="true">↗</span><div><h2>Abrir pack por link</h2><p>Cole aqui o link de qualquer pack WAVS.</p></div></div>
-        <div class="input-row"><input id="pack-url" type="url" placeholder="https://wavs.com/packs/12345" autocomplete="url" aria-label="Link do pack WAVS" required><button id="load-button" type="submit">Mostrar pack <span aria-hidden="true">→</span></button></div>
+        <div class="link-form-heading"><span class="link-form-icon" aria-hidden="true">?</span><div><h2>Abrir pack por link</h2><p>Cole aqui o link de qualquer pack WAVS.</p></div></div>
+        <div class="input-row"><input id="pack-url" type="url" placeholder="https://wavs.com/packs/12345" autocomplete="url" aria-label="Link do pack WAVS" required><button id="load-button" type="submit">Mostrar pack <span aria-hidden="true"></span></button></div>
       </form>
     </section>
-    <div id="download-status" class="download-status hidden" role="status" aria-live="polite" aria-atomic="true"><span class="download-status-icon" aria-hidden="true"><img id="download-artwork" class="hidden" alt=""></span><span id="download-message"></span><progress id="download-progress-bar" class="download-progress-bar hidden" max="100" value="0" aria-label="Progresso do download"></progress><button id="cancel-download" class="cancel-download hidden" type="button">Cancelar</button><button id="dismiss-download-status" class="dismiss-download-status" type="button" aria-label="Fechar aviso">×</button></div>
+    <div id="download-status" class="download-status hidden" role="status" aria-live="polite" aria-atomic="true"><span class="download-status-icon" aria-hidden="true"><span id="download-update-icon" class="download-update-icon hidden"><img src="wavs.ico" alt=""><span class="download-update-icon-fill"><img src="wavs.ico" alt=""></span></span><img id="download-artwork" class="hidden" alt=""></span><span id="download-message"></span><progress id="download-progress-bar" class="download-progress-bar hidden" max="100" value="0" aria-label="Progresso do download"></progress><button id="cancel-download" class="cancel-download hidden" type="button">Cancelar</button><button id="dismiss-download-status" class="dismiss-download-status" type="button" aria-label="Fechar aviso">�</button></div>
     <p id="status" class="global-status" aria-live="polite"></p>
     <section id="pack-panel" class="pack-panel hidden"></section>
     <section id="top" class="catalog-section" aria-labelledby="catalog-title">
       <section id="featured-pack" class="discovery-feature hidden" aria-label="Pack em destaque"></section>
       <section id="recent-shelf" class="recent-shelf hidden" aria-labelledby="recent-title">
-        <div class="shelf-heading"><div><p class="catalog-eyebrow">ATUALIZADO PELO WAVS</p><h2 id="recent-title">Recém-lançados <span aria-hidden="true">›</span></h2></div><div class="shelf-controls"><button id="recent-previous" class="shelf-arrow" type="button" aria-label="Packs anteriores">←</button><button id="recent-next" class="shelf-arrow" type="button" aria-label="Próximos packs">→</button></div></div>
-        <div id="recent-genres" class="recent-genres" aria-label="Filtrar por gênero"></div>
+        <div class="shelf-heading"><div><p class="catalog-eyebrow">ATUALIZADO PELO WAVS</p><h2 id="recent-title">Rec�m-lan�ados <span aria-hidden="true">></span></h2></div><div class="shelf-controls"><button id="recent-previous" class="shelf-arrow" type="button" aria-label="Packs anteriores"></button><button id="recent-next" class="shelf-arrow" type="button" aria-label="Pr�ximos packs"></button></div></div>
+        <div id="recent-genres" class="recent-genres" aria-label="Filtrar por g�nero"></div>
         <div id="recent-list" class="recent-list"></div>
       </section>
-      <div class="catalog-heading"><div><p class="catalog-eyebrow" id="catalog-eyebrow">DESCOBRIR · WAVS</p><h1 id="catalog-title">Encontre seu próximo som.</h1><p class="catalog-description" id="catalog-description">Explore packs novos, filtre por gênero e abra para ouvir as prévias.</p></div><button id="refresh-catalog" class="catalog-refresh" type="button">↻ Atualizar</button></div>
+      <div class="catalog-heading"><div><p class="catalog-eyebrow" id="catalog-eyebrow">DESCOBRIR � WAVS</p><h1 id="catalog-title">Encontre seu pr�ximo som.</h1><p class="catalog-description" id="catalog-description">Explore packs novos, filtre por g�nero e abra para ouvir as pr�vias.</p></div><button id="refresh-catalog" class="catalog-refresh" type="button">? Atualizar</button></div>
       <div id="packs-view">
         <div class="creator-search-field">
           <label class="creator-search-label" for="catalog-search">PESQUISAR NO WAVS</label>
-          <label class="catalog-search"><span aria-hidden="true">⌕</span><input id="catalog-search" type="search" placeholder="Busque packs, samples, generos ou criadores..." autocomplete="off" aria-label="Pesquisar packs, samples e criadores no WAVS" aria-controls="creator-search-suggestions" aria-expanded="false"></label>
-          <div id="creator-search-suggestions" class="creator-search-suggestions hidden" role="listbox" aria-label="Sugestões de criadores"></div>
+          <label class="catalog-search"><span aria-hidden="true">?</span><input id="catalog-search" type="search" placeholder="Busque packs, samples, generos ou criadores..." autocomplete="off" aria-label="Pesquisar packs, samples e criadores no WAVS" aria-controls="creator-search-suggestions" aria-expanded="false"></label>
+          <div id="creator-search-suggestions" class="creator-search-suggestions hidden" role="listbox" aria-label="Sugest�es de criadores"></div>
         </div>
-        <div class="catalog-toolbar"><select id="catalog-genre" class="hidden" tabindex="-1" aria-hidden="true"><option value="">Todos os gêneros</option></select>
-          <div class="filter-field"><span>PERÍODO</span><select id="catalog-period" aria-label="Filtrar por período"><option value="">Qualquer data</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="365">Último ano</option></select></div>
+        <div class="catalog-toolbar"><select id="catalog-genre" class="hidden" tabindex="-1" aria-hidden="true"><option value="">Todos os g�neros</option></select>
+          <div class="filter-field"><span>PER�ODO</span><select id="catalog-period" aria-label="Filtrar por per�odo"><option value="">Qualquer data</option><option value="7">�ltimos 7 dias</option><option value="30">�ltimos 30 dias</option><option value="365">�ltimo ano</option></select></div>
           <div class="filter-field catalog-sort-field"><span>ORDENAR</span><select id="catalog-sort" aria-label="Ordenar packs"><option value="newest">Mais recentes</option><option value="oldest">Mais antigos</option><option value="title">Nome (A-Z)</option><option value="samples">Mais samples</option></select></div>
         </div>
         <div class="catalog-active-filters"><div id="active-filter-list" class="active-filter-list" aria-live="polite"></div><button id="clear-catalog-filters" class="clear-filters hidden" type="button">Limpar filtros</button></div>
-        <p id="catalog-status" class="catalog-status" aria-live="polite">Carregando packs novos…</p>
+        <p id="catalog-status" class="catalog-status" aria-live="polite">Carregando packs novos.</p>
         <div id="catalog-list" class="catalog-list"></div>
         <p id="catalog-empty" class="catalog-empty hidden">Nenhum pack encontrado. Tente mudar os filtros.</p>
         <button id="catalog-more" class="catalog-more hidden" type="button">Mostrar mais packs</button>
       </div>
       <section id="creator-profile" class="creator-profile hidden" aria-label="Perfil do criador"></section>
     </section>
-    <footer><span>Metadados e prévias do catálogo público do WAVS.</span><span>Baixe as prévias MP3 disponíveis diretamente para a pasta escolhida.</span><span class="app-credit">Developed by Nyo and White</span></footer>
+    <footer><span>Metadados e pr�vias do cat�logo p�blico do WAVS.</span><span>Baixe as pr�vias MP3 dispon�veis diretamente para a pasta escolhida.</span><span class="app-credit">Developed by Nyo and White</span></footer>
     </main>
   </div>
   <div id="app-update-overlay" class="app-update-overlay hidden" aria-hidden="true">
-    <section class="app-update-card" role="dialog" aria-modal="true" aria-labelledby="app-update-title" aria-describedby="app-update-message">
-      <div class="app-update-brand"><span class="app-update-mark">W</span><span>Wavs<span>Resolver</span></span><span class="app-update-kicker">ATUALIZAÇÃO</span></div>
-      <h2 id="app-update-title">Uma nova versão chegou.</h2>
-      <p id="app-update-version" class="app-update-version">Versão —</p>
-      <div class="app-update-notes"><h3>O que há de novo</h3><p id="app-update-notes-text"></p></div>
-      <div class="app-update-progress-wrap"><progress id="app-update-progress" max="100" value="0"></progress><p id="app-update-message" aria-live="polite">Preparando a atualização…</p></div>
-      <div class="app-update-actions"><button id="app-update-later" class="app-update-later" type="button">Mais tarde</button><button id="app-update-now" class="app-update-now" type="button" disabled>Baixando…</button></div>
+    <section class="app-update-card" role="dialog" aria-modal="true" aria-labelledby="app-update-title" aria-describedby="app-update-version app-update-notes-text">
+      <div class="app-update-brand"><span class="app-update-mark" aria-hidden="true"><img src="wavs.ico" alt=""><span class="app-update-mark-fill"><img src="wavs.ico" alt=""></span></span><span>Wavs<span>Resolver</span></span><span id="app-update-kicker" class="app-update-kicker">ATUALIZA��O</span></div>
+      <h2 id="app-update-title">Uma nova atualiza��o chegou</h2>
+      <p id="app-update-version" class="app-update-version">Vers�o -</p>
+      <div class="app-update-notes"><h3 id="app-update-notes-heading">O que muda nesta vers�o</h3><div id="app-update-notes-text" class="app-update-notes-content"></div></div>
+      <div id="app-update-progress-wrap" class="app-update-progress-wrap hidden"><progress id="app-update-progress" max="100" value="0"></progress><p id="app-update-message" aria-live="polite">Escolha quando deseja atualizar.</p></div>
+      <div class="app-update-actions"><button id="app-update-later" class="app-update-later" type="button">Mais tarde</button><button id="app-update-now" class="app-update-now" type="button">Atualizar agora</button></div>
     </section>
   </div>
-  <aside id="bottom-player" class="bottom-player hidden" aria-label="Player de prévia">
+  <aside id="bottom-player" class="bottom-player hidden" aria-label="Player de pr�via">
     <div class="bottom-player-track">
       <img id="bottom-player-cover" class="bottom-player-cover hidden" alt="">
       <div id="bottom-player-cover-fallback" class="bottom-player-cover bottom-player-cover-fallback">W</div>
-      <div class="bottom-player-track-info"><strong id="bottom-player-title">Nenhuma prévia selecionada</strong><span id="bottom-player-subtitle">Escolha uma sample para ouvir</span></div>
+      <div class="bottom-player-track-info"><strong id="bottom-player-title">Nenhuma pr�via selecionada</strong><span id="bottom-player-subtitle">Escolha uma sample para ouvir</span></div>
       <button id="bottom-player-download" class="sample-download bottom-player-download hidden" type="button">Baixar MP3</button>
     </div>
     <div class="bottom-player-controls">
       <button id="bottom-player-previous" class="bottom-player-skip" type="button" aria-label="Sample anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="skip-bar" d="M5 5v14"></path><path d="M19 6l-9 6 9 6z"></path></svg></button>
-      <button id="bottom-player-toggle" class="bottom-player-toggle" type="button" aria-label="Reproduzir prévia"><svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg><svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM15 5h4v14h-4z"></path></svg></button>
-      <button id="bottom-player-next" class="bottom-player-skip" type="button" aria-label="Próxima sample"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="skip-bar" d="M19 5v14"></path><path d="M5 6l9 6-9 6z"></path></svg></button>
-      <button id="bottom-player-repeat" class="bottom-player-repeat" type="button" aria-label="Repetir sample" aria-pressed="false" title="Repetir sample (R)">↻</button>
+      <button id="bottom-player-toggle" class="bottom-player-toggle" type="button" aria-label="Reproduzir pr�via"><svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg><svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM15 5h4v14h-4z"></path></svg></button>
+      <button id="bottom-player-next" class="bottom-player-skip" type="button" aria-label="Pr�xima sample"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="skip-bar" d="M19 5v14"></path><path d="M5 6l9 6-9 6z"></path></svg></button>
+      <button id="bottom-player-repeat" class="bottom-player-repeat" type="button" aria-label="Repetir sample" aria-pressed="false" title="Repetir sample (R)">?</button>
     </div>
-    <canvas id="bottom-player-waveform" class="bottom-player-waveform" role="slider" aria-label="Posição da prévia" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"></canvas>
+    <canvas id="bottom-player-waveform" class="bottom-player-waveform" role="slider" aria-label="Posi��o da pr�via" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"></canvas>
     <span id="bottom-player-time" class="bottom-player-time">0:00 / 0:00</span>
-    <label class="bottom-player-volume" title="Volume da prévia">VOL<input id="bottom-player-volume" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volume da prévia"></label>
+    <label class="bottom-player-volume" title="Volume da pr�via">VOL<input id="bottom-player-volume" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volume da pr�via"></label>
     <audio id="bottom-player-audio" preload="none"></audio>
   </aside>
 </body>

@@ -2272,15 +2272,15 @@ body.pack-view-active .sample-waveform { filter: contrast(1.18) drop-shadow(0 0 
   font-size: 14px;
   font-weight: 800;
 }
-.download-status-icon::before { content: "↓"; }
+.download-status-icon::before { content: ""; }
 .download-status-icon img { display: block; width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
 .download-status.has-artwork .download-status-icon { width: 42px; height: 42px; overflow: hidden; border-radius: 11px; background: rgba(255, 255, 255, .08); }
 .download-status.has-artwork { grid-template-columns: 44px minmax(0, 1fr) 28px; }
 .download-status.has-artwork .download-status-icon::before { content: none; }
 .download-status[aria-busy="true"] .download-status-icon { color: #ddd2ff; background: rgba(167, 139, 250, .16); }
-.download-status[aria-busy="true"] .download-status-icon::before { content: "↓"; }
+.download-status[aria-busy="true"] .download-status-icon::before { content: ""; }
 .download-status.success .download-status-icon { color: #c5f3d5; background: rgba(74, 222, 128, .13); }
-.download-status.success .download-status-icon::before { content: "✓"; }
+.download-status.success .download-status-icon::before { content: "V"; }
 .download-status:not(.success) .download-status-icon { color: #ffd0c8; background: rgba(248, 113, 113, .13); }
 .download-status:not(.success) .download-status-icon::before { content: "!"; }
 .download-status .download-progress-bar {
@@ -2770,14 +2770,31 @@ body.pack-view-active .sample-waveform:hover {
 .recent-list {
   scroll-behavior: smooth;
   scroll-padding-inline: 2px;
-  overscroll-behavior-x: contain;
 }
 .recent-list .catalog-card { scroll-snap-align: start; }
 .shelf-arrow { transition: color 180ms ease, background-color 180ms ease, transform 220ms cubic-bezier(.2,.72,.24,1); }
 .shelf-arrow:active { transform: scale(.92); }
 .download-status.is-update #download-message { color: #f0edf7; }
-.download-status.is-update .download-status-icon { color: #fff; background: rgba(255,255,255,.1); }
-.download-status.is-update .download-status-icon::before { content: "\21BB"; }
+.download-status.is-update .download-status-icon { color: #fff; background: transparent; box-shadow: none; }
+.download-status.is-update .download-status-icon::before { content: none; }
+.download-update-icon,
+.app-update-mark { position: relative; display: block; overflow: hidden; isolation: isolate; }
+.download-update-icon { width: 38px; height: 38px; }
+.download-update-icon > img,
+.download-update-icon-fill,
+.download-update-icon-fill > img,
+.app-update-mark > img,
+.app-update-mark-fill,
+.app-update-mark-fill > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.download-update-icon > img,
+.app-update-mark > img { filter: grayscale(1) brightness(1.65); opacity: .46; }
+.download-update-icon-fill,
+.app-update-mark-fill { clip-path: inset(calc(100% - var(--update-fill, 0%)) 0 0 0); transition: clip-path .2s linear; }
+.download-update-icon-fill > img,
+.app-update-mark-fill > img { filter: drop-shadow(0 0 5px rgba(195, 170, 255, .45)); }
+.download-status.is-update .download-update-icon { width: 46px; height: 46px; }
+.app-update-mark { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px; background: rgba(255,255,255,.08); }
+.app-update-mark > img { padding: 3px; }
 .download-status.is-update.success .download-status-icon::before { content: "\2713"; }
 .download-status.is-update .download-progress-bar { accent-color: #fff; }
 .download-status.is-update .download-progress-bar::-webkit-progress-value { background: linear-gradient(90deg, #d9dce4, #fff); }
@@ -2788,9 +2805,6 @@ body[data-theme="light"] .download-status.is-update #download-message { color: #
   .recent-list { scroll-behavior: auto; transition: none; transform: none; opacity: 1; }
   .shelf-arrow { transition: none; }
 }
-
-
-
 
 /* Keep the fixed preview dock outside the scrollable content area. */
 html, body { width: 100%; height: 100%; overflow: hidden; }
@@ -2823,7 +2837,6 @@ body.player-active .app-layout { height: calc(100dvh - var(--player-dock-reserve
   .app-sidebar { height: auto; }
   body.player-active { --player-dock-reserved-height: 190px; }
 }
-
 
 .sidebar-version {
   flex: 0 0 auto;
@@ -2858,13 +2871,21 @@ body.player-active .app-layout { height: calc(100dvh - var(--player-dock-reserve
 }
 .app-update-brand { display: flex; align-items: center; gap: 9px; color: #f5f3fa; font-size: 13px; font-weight: 750; }
 .app-update-brand > span:nth-child(2) > span { color: #b8b2c3; font-weight: 500; }
-.app-update-mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; color: #17141c; background: linear-gradient(135deg, #e8e2f4, #bda9ef); font-size: 16px; font-weight: 900; }
+.app-update-mark { width: 34px; height: 34px; flex: 0 0 34px; display: block; position: relative; overflow: hidden; isolation: isolate; border-radius: 10px; background: rgba(255,255,255,.08); font-size: 0; }
 .app-update-kicker { margin-left: auto; color: #bfbac8; font-size: 9px; font-weight: 750; letter-spacing: 1.25px; }
 .app-update-card h2 { margin: 24px 0 6px; font-size: clamp(23px, 4vw, 29px); line-height: 1.15; letter-spacing: -.8px; }
 .app-update-version { margin: 0; color: #c5bfd0; font-size: 13px; font-weight: 600; }
 .app-update-notes { margin-top: 22px; padding: 16px 17px; border: 1px solid rgba(255,255,255,.09); border-radius: 15px; background: rgba(255,255,255,.045); }
 .app-update-notes h3 { margin: 0 0 8px; color: #f4f1f8; font-size: 11px; font-weight: 750; letter-spacing: .04em; }
-.app-update-notes p { max-height: 148px; overflow: auto; margin: 0; color: #c9c5d0; font-size: 12px; line-height: 1.65; white-space: pre-line; scrollbar-width: thin; }
+.app-update-notes-content { max-height: 240px; overflow: auto; margin: 0; color: #c9c5d0; font-size: 12px; line-height: 1.65; scrollbar-width: thin; }
+.app-update-notes-content p { margin: 0 0 9px; }
+.app-update-notes-content p:last-child { margin-bottom: 0; }
+.app-update-notes-content h4 { margin: 15px 0 5px; color: #f4f1f8; font-size: 12px; font-weight: 750; }
+.app-update-notes-content h4:first-child { margin-top: 0; }
+.app-update-notes-content ul { display: grid; gap: 7px; margin: 5px 0 10px; padding-left: 18px; }
+.app-update-notes-content li { padding-left: 2px; }
+.app-update-notes-content strong { color: #f5f3fa; }
+.app-update-notes-content code { padding: 1px 4px; border-radius: 5px; color: #f1eff5; background: rgba(255,255,255,.09); font: .94em ui-monospace, SFMono-Regular, Consolas, monospace; }
 .app-update-progress-wrap { margin-top: 17px; }
 .app-update-progress-wrap progress { appearance: none; display: block; width: 100%; height: 5px; overflow: hidden; border: 0; border-radius: 999px; background: rgba(255,255,255,.12); }
 .app-update-progress-wrap progress::-webkit-progress-bar { border-radius: 999px; background: rgba(255,255,255,.12); }
@@ -2890,7 +2911,10 @@ body[data-theme="light"] .app-update-progress-wrap p { color: #706b79; }
 body[data-theme="light"] .app-update-kicker { color: #807a88; }
 body[data-theme="light"] .app-update-notes { border-color: rgba(74,63,91,.09); background: rgba(74,63,91,.035); }
 body[data-theme="light"] .app-update-notes h3 { color: #302b39; }
-body[data-theme="light"] .app-update-notes p { color: #5f5a68; }
+body[data-theme="light"] .app-update-notes-content { color: #5f5a68; }
+body[data-theme="light"] .app-update-notes-content h4,
+body[data-theme="light"] .app-update-notes-content strong { color: #302b39; }
+body[data-theme="light"] .app-update-notes-content code { color: #494451; background: rgba(74,63,91,.08); }
 body[data-theme="light"] .app-update-later { border-color: rgba(74,63,91,.13); color: #494451; background: rgba(74,63,91,.055); }
 body[data-theme="light"] .sidebar-version { color: rgba(64,60,72,.55); }
 @media (max-width: 800px) {
@@ -2906,3 +2930,5 @@ body[data-theme="light"] .sidebar-version { color: rgba(64,60,72,.55); }
 @media (prefers-reduced-motion: reduce) {
   .app-update-overlay, .app-update-card, .app-update-actions button { animation: none; transition: none; }
 }
+
+

@@ -4,11 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       release_notes:
-        description: "Notas que aparecerao no card de atualizacao"
+        description: "Notas que aparecer�o no card de atualiza��o"
         required: true
         type: string
-        default: "Melhorias e correcoes."
-
+        default: |
+          ## Novidades do WavsResolver
+          - Atualiza��o com escolha entre instalar agora ou mais tarde, progresso do download, rein�cio autom�tico e resumo das mudan�as ap�s reabrir.
+          - �cone do app ganha cor conforme o download da atualiza��o avan�a.
+          - Waveforms redesenham apenas quando o progresso visual muda, reduzindo trabalho durante a reprodu��o.
+          - Rolagem vertical da p�gina n�o fica presa sobre o carrossel de packs recentes.
 
 permissions:
   contents: write
