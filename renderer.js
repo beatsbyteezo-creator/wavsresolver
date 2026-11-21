@@ -2497,6 +2497,8 @@ favoritesNavigationButton.addEventListener('click', () => setCatalogView('favori
 homeNavigationButton.addEventListener('click', navigateHome);
 recentPreviousButton.addEventListener('click', () => recentList.scrollBy({ left: -recentList.clientWidth * 0.82, behavior: 'smooth' }));
 recentNextButton.addEventListener('click', () => recentList.scrollBy({ left: recentList.clientWidth * 0.82, behavior: 'smooth' }));
+let outsideWheelDelta = 0;
+let outsideWheelFrame = 0;
 function forwardOutsideWheel(event) {
   if (!event.deltaY || event.ctrlKey || event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
   if (event.target.closest?.('#bottom-player input[type="range"]')) return;
@@ -2506,7 +2508,13 @@ function forwardOutsideWheel(event) {
       ? event.deltaY * appShell.clientHeight
       : event.deltaY;
   event.preventDefault();
-  appShell.scrollTop += delta;
+  outsideWheelDelta += delta;
+  if (outsideWheelFrame) return;
+  outsideWheelFrame = requestAnimationFrame(() => {
+    appShell.scrollTop += outsideWheelDelta;
+    outsideWheelDelta = 0;
+    outsideWheelFrame = 0;
+  });
 }
 document.querySelector('.app-sidebar').addEventListener('wheel', forwardOutsideWheel, { passive: false });
 bottomPlayer.addEventListener('wheel', forwardOutsideWheel, { passive: false });
