@@ -204,7 +204,7 @@ function enhanceSelect(select) {
   trigger.setAttribute('role', 'combobox');
   trigger.setAttribute('aria-haspopup', 'listbox');
   trigger.setAttribute('aria-expanded', 'false');
-  trigger.setAttribute('aria-label', select.getAttribute('aria-label') || 'Escolher opção');
+  trigger.setAttribute('aria-label', select.getAttribute('aria-label') || 'Escolher op��o');
   const menu = document.createElement('div');
   menu.className = 'custom-select-menu hidden';
   menu.id = `${select.id}-options`;
@@ -286,9 +286,9 @@ initializeCustomSelects();
 async function saveAppPreference(key, value) {
   try {
     const result = await window.wavsResolver.saveAppPreference(key, value);
-    if (!result.ok) setStatus(result.message || 'Não foi possível salvar esta preferência.');
+    if (!result.ok) setStatus(result.message || 'N�o foi poss�vel salvar esta prefer�ncia.');
   } catch (error) {
-    setStatus(error.message || 'Não foi possível salvar esta preferência.');
+    setStatus(error.message || 'N�o foi poss�vel salvar esta prefer�ncia.');
   }
 }
 function updateBackButton() {
@@ -350,7 +350,7 @@ function updateDownloadStatus(data) {
 function prepareNotificationSound() {
   if (!window.AudioContext || notificationAudioContext) return;
   notificationAudioContext = new AudioContext();
-  notificationAudioContext.resume().catch((error) => console.warn('Não foi possível preparar o som de conclusão:', error));
+  notificationAudioContext.resume().catch((error) => console.warn('N�o foi poss�vel preparar o som de conclus�o:', error));
 }
 function playNotificationBubble() {
   if (!notificationAudioContext) return;
@@ -379,7 +379,7 @@ function playNotificationBubble() {
     }
     master.gain.setValueAtTime(0.18, now + 0.3);
     master.gain.exponentialRampToValueAtTime(0.0001, now + 0.36);
-  }).catch((error) => console.warn('Não foi possível tocar o som de conclusão:', error));
+  }).catch((error) => console.warn('N�o foi poss�vel tocar o som de conclus�o:', error));
 }
 window.addEventListener('pointerdown', prepareNotificationSound, { once: true });
 window.addEventListener('keydown', prepareNotificationSound, { once: true });
@@ -453,7 +453,7 @@ function formatReleaseNotes(markdown) {
   }
   flushParagraph();
   flushBullets();
-  return output.join('') || '<ul><li>Correção de bugs visuais e de navegação.</li><li>Upgrade no visual e na fluidez do app.</li></ul>';
+  return output.join('') || '<ul><li>Corre��o de bugs visuais e de navega��o.</li><li>Upgrade no visual e na fluidez do app.</li></ul>';
 }
 function coverUrl(pack) { const raw = pack.thumb || pack.demo?.pack_thumb || ''; if (raw.startsWith('https://')) return raw; if (raw.startsWith('images/')) return `https://cdn.wavs.com/${raw}`; return ''; }
 function sampleDetails(sample) {
@@ -548,7 +548,7 @@ function formatRelativeReleaseTime(pack) {
 function updateCatalogGenreOptions() {
   const selectedGenre = catalogGenreSelect.value;
   const genres = getCatalogGenres([...catalogPacks, ...discoveryPacks, ...favoritePacks, ...globalSearchPacks]);
-  catalogGenreSelect.replaceChildren(new Option('Todos os gêneros', ''));
+  catalogGenreSelect.replaceChildren(new Option('Todos os g�neros', ''));
   const genreIds = new Map();
   for (const pack of [...catalogPacks, ...discoveryPacks, ...favoritePacks, ...globalSearchPacks]) {
     for (const genre of pack.genres || []) {
@@ -599,7 +599,7 @@ function packCardMarkup(pack) {
     : '<span class="catalog-creator-avatar catalog-creator-avatar-fallback" aria-hidden="true">W</span>';
   const saved = favoritePacks.some((favorite) => String(favorite.id) === String(pack.id));
   const sampleCount = pack.audio_count == null ? 'Pack WAVS' : `${Number(pack.audio_count || 0)} samples`;
-  return `<article class="catalog-card" data-pack-id="${escapeHtml(pack.id)}"><div class="catalog-media-shell"><button class="catalog-open catalog-cover-button" type="button" data-pack-id="${escapeHtml(pack.id)}" aria-label="Abrir pack ${escapeHtml(pack.title)}"><span class="catalog-media">${coverMarkup}<span class="catalog-card-overlay">${pack.is_free ? '<span class="catalog-badge">GRÁTIS</span>' : ''}<span class="catalog-arrow" aria-hidden="true">↗</span></span></span></button><button class="catalog-preview-button" type="button" data-pack-id="${escapeHtml(pack.id)}" aria-label="Ouvir prévia de ${escapeHtml(pack.title)}" aria-pressed="false" title="Ouvir prévia">▶</button><button class="favorite-pack-button${saved ? ' is-saved' : ''}" type="button" data-pack-id="${escapeHtml(pack.id)}" aria-label="${saved ? 'Remover dos packs salvos' : 'Salvar pack'}" aria-pressed="${saved}" title="${saved ? 'Remover dos packs salvos' : 'Salvar pack'}">${saved ? '♥' : '♡'}</button></div><button class="catalog-open catalog-card-body" type="button" data-pack-id="${escapeHtml(pack.id)}" aria-label="Abrir pack ${escapeHtml(pack.title)}"><span class="catalog-pack-title">${escapeHtml(pack.title)}</span><span class="catalog-meta">${genres.slice(0, 2).map((genre) => `<span>${escapeHtml(genre)}</span>`).join('')}</span>${age ? `<span class="catalog-age${isNew ? ' is-new' : ''}">◷ ${escapeHtml(age)}</span>` : ''}</button><div class="catalog-card-footer"><div class="catalog-card-author"><button class="catalog-creator-link${isNew ? ' is-new' : ''}" type="button" data-creator-id="${escapeHtml(creatorId)}" data-creator-username="${escapeHtml(creatorUsername)}" data-creator-display="${escapeHtml(creator)}" aria-label="Abrir perfil de ${escapeHtml(creator)}">${creatorAvatarMarkup}<span>${escapeHtml(creator)}</span></button>${isNew ? '<span class="new-pack-badge">NEW</span>' : ''}</div><span>${sampleCount}</span></div></article>`;
+  return `<article class="catalog-card" data-pack-id="${escapeHtml(pack.id)}"><div class="catalog-media-shell"><button class="catalog-open catalog-cover-button" type="button" data-pack-id="${escapeHtml(pack.id)}" aria-label="Abrir pack ${escapeHtml(pack.title)}"><span class="catalog-media">${coverMarkup}<span class="catalog-card-overlay">${pack.is_free ? '<span class="catalog-badge">GR�TIS</span>' : ''}<span class="catalog-arrow" aria-hidden="true">?</span></span></span></button><button class="catalog-preview-button" type="button" data-pack-id="${escapeHtml(pack.id)}" aria-label="Ouvir pr�via de ${escapeHtml(pack.title)}" aria-pressed="false" title="Ouvir pr�via"><svg class="preview-icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z"/></svg><svg class="preview-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg></button><button class="favorite-pack-button${saved ? ' is-saved' : ''}" type="button" data-pack-id="${escapeHtml(pack.id)}" aria-label="${saved ? 'Remover dos packs salvos' : 'Salvar pack'}" aria-pressed="${saved}" title="${saved ? 'Remover dos packs salvos' : 'Salvar pack'}">${saved ? '' : '?'}</button></div><button class="catalog-open catalog-card-body" type="button" data-pack-id="${escapeHtml(pack.id)}" aria-label="Abrir pack ${escapeHtml(pack.title)}"><span class="catalog-pack-title">${escapeHtml(pack.title)}</span><span class="catalog-meta">${genres.slice(0, 2).map((genre) => `<span>${escapeHtml(genre)}</span>`).join('')}</span>${age ? `<span class="catalog-age${isNew ? ' is-new' : ''}">? ${escapeHtml(age)}</span>` : ''}</button><div class="catalog-card-footer"><div class="catalog-card-author"><button class="catalog-creator-link${isNew ? ' is-new' : ''}" type="button" data-creator-id="${escapeHtml(creatorId)}" data-creator-username="${escapeHtml(creatorUsername)}" data-creator-display="${escapeHtml(creator)}" aria-label="Abrir perfil de ${escapeHtml(creator)}">${creatorAvatarMarkup}<span>${escapeHtml(creator)}</span></button>${isNew ? '<span class="new-pack-badge">NEW</span>' : ''}</div><span>${sampleCount}</span></div></article>`;
 }
 
 function stopPackHoverPreview(card = null) {
@@ -610,8 +610,7 @@ function stopPackHoverPreview(card = null) {
     previewCard.classList.remove('is-previewing');
     const previewButton = previewCard.querySelector('.catalog-preview-button');
     previewButton?.setAttribute('aria-pressed', 'false');
-    if (previewButton) previewButton.textContent = '▶';
-    if (previewButton) previewButton.setAttribute('aria-label', `Ouvir prévia de ${previewCard.querySelector('.catalog-pack-title')?.textContent || 'pack'}`);
+    if (previewButton) previewButton.setAttribute('aria-label', `Ouvir pr�via de ${previewCard.querySelector('.catalog-pack-title')?.textContent || 'pack'}`);
   }
   packHoverCard = null;
   activePackPreviewCard = null;
@@ -621,7 +620,7 @@ function stopPackHoverPreview(card = null) {
 function getPackPreview(packId) {
   if (!packPreviewCache.has(packId)) {
     const request = window.wavsResolver.loadPackPreview(packId).then((result) => {
-      if (!result.ok) throw new Error(result.message || 'Não foi possível carregar a prévia deste pack.');
+      if (!result.ok) throw new Error(result.message || 'N�o foi poss�vel carregar a pr�via deste pack.');
       return result.url;
     }).catch((error) => {
       packPreviewCache.delete(packId);
@@ -636,7 +635,7 @@ async function playPackHoverPreview(card) {
   if (!card.isConnected || document.visibilityState !== 'visible') return;
   const packId = String(card.dataset.packId);
   if (activePackPreviewId === packId && activePackPreviewCard === card) {
-    if (bottomPlayerAudio.paused) bottomPlayerAudio.play().catch((error) => setDownloadStatus(error.message || 'Não foi possível reproduzir esta prévia.'));
+    if (bottomPlayerAudio.paused) bottomPlayerAudio.play().catch((error) => setDownloadStatus(error.message || 'N�o foi poss�vel reproduzir esta pr�via.'));
     else bottomPlayerAudio.pause();
     return;
   }
@@ -657,7 +656,7 @@ async function playPackHoverPreview(card) {
     activePackPreviewCard = card;
     bottomPlayerAudio.src = url;
     bottomPlayerAudio.load();
-    bottomPlayerTitle.textContent = `${pack.title || 'Pack WAVS'} · Prévia`;
+    bottomPlayerTitle.textContent = `${pack.title || 'Pack WAVS'} � Pr�via`;
     bottomPlayerSubtitle.textContent = creator;
     const cover = catalogCoverUrl(pack);
     bottomPlayerCover.classList.toggle('hidden', !cover);
@@ -675,7 +674,7 @@ async function playPackHoverPreview(card) {
     card.classList.add('is-previewing');
     const previewButton = card.querySelector('.catalog-preview-button');
     previewButton?.setAttribute('aria-pressed', 'true');
-    previewButton?.setAttribute('aria-label', `Parar prévia de ${pack.title || 'pack'}`);
+    previewButton?.setAttribute('aria-label', `Parar pr�via de ${pack.title || 'pack'}`);
     getWaveformPeaks(url).then((peaks) => {
       if (activePackPreviewId !== packId) return;
       bottomPlayerWaveform.waveformPeaks = peaks;
@@ -697,12 +696,22 @@ async function playPackHoverPreview(card) {
     activePackPreviewId = null;
     if (bottomPlayerAudio.src) stopBottomPlayer();
     if (error.name === 'NotAllowedError') return;
-    console.error(`Não foi possível reproduzir a prévia do pack ${packId}:`, error);
+    console.error(`N�o foi poss�vel reproduzir a pr�via do pack ${packId}:`, error);
     card.classList.add('preview-unavailable');
-    card.querySelector('.catalog-preview-button')?.setAttribute('title', error.message || 'Prévia indisponível');
+    card.querySelector('.catalog-preview-button')?.setAttribute('title', error.message || 'Pr�via indispon�vel');
   }
 }
 function bindPackHoverPreview(card) {
+  card.addEventListener('pointerenter', () => {
+    document.querySelectorAll('.catalog-card.is-hovered').forEach((otherCard) => {
+      if (otherCard !== card) otherCard.classList.remove('is-hovered', 'is-hovered-down');
+    });
+    const shellRect = document.querySelector('.shell')?.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    card.classList.toggle('is-hovered-down', Boolean(shellRect && cardRect.top < shellRect.top + 24));
+    card.classList.add('is-hovered');
+  });
+  card.addEventListener('pointerleave', () => card.classList.remove('is-hovered', 'is-hovered-down'));
   card.querySelector('.catalog-preview-button')?.addEventListener('click', (event) => {
     event.stopPropagation();
     void playPackHoverPreview(card);
@@ -748,8 +757,8 @@ function renderActiveFilters() {
   const filters = [];
   const query = catalogSearchInput.value.trim();
   if (query) filters.push({ key: 'search', label: `Busca: ${query}` });
-  if (catalogGenreSelect.value) filters.push({ key: 'genre', label: `Gênero: ${catalogGenreSelect.value}` });
-  if (catalogPeriodSelect.value) filters.push({ key: 'period', label: `Período: ${catalogPeriodSelect.options[catalogPeriodSelect.selectedIndex].text}` });
+  if (catalogGenreSelect.value) filters.push({ key: 'genre', label: `G�nero: ${catalogGenreSelect.value}` });
+  if (catalogPeriodSelect.value) filters.push({ key: 'period', label: `Per�odo: ${catalogPeriodSelect.options[catalogPeriodSelect.selectedIndex].text}` });
   if (catalogSortSelect.value !== 'newest') filters.push({ key: 'sort', label: `Ordem: ${catalogSortSelect.options[catalogSortSelect.selectedIndex].text}` });
   activeFilterList.replaceChildren(...filters.map(({ key, label }) => {
     const chip = document.createElement('button');
@@ -757,7 +766,7 @@ function renderActiveFilters() {
     chip.type = 'button';
     chip.dataset.filter = key;
     chip.setAttribute('aria-label', `Remover filtro ${label}`);
-    chip.textContent = `${label} ×`;
+    chip.textContent = `${label} �`;
     chip.addEventListener('click', () => {
       if (key === 'search') {
         catalogSearchInput.value = '';
@@ -799,7 +808,7 @@ function renderCreatorSearchSuggestions() {
     return;
   }
   if (globalSearchLoading && globalSearchCreators.length === 0) {
-    creatorSearchSuggestions.innerHTML = '<p class="creator-search-hint" role="status">Buscando criadores…</p>';
+    creatorSearchSuggestions.innerHTML = '<p class="creator-search-hint" role="status">Buscando criadores.</p>';
     return;
   }
   if (globalSearchError) {
@@ -808,14 +817,14 @@ function renderCreatorSearchSuggestions() {
   }
   if (!globalSearchCreators.length) {
     const hint = globalSearchWarning.includes('busca de criadores falhou')
-      ? 'Não foi possível carregar as sugestões de criadores agora.'
-      : `Nenhum criador encontrado para “${escapeHtml(query)}”.`;
+      ? 'N�o foi poss�vel carregar as sugest�es de criadores agora.'
+      : `Nenhum criador encontrado para "${escapeHtml(query)}".`;
     creatorSearchSuggestions.innerHTML = `<p class="creator-search-hint">${hint}</p>`;
     return;
   }
   creatorSearchSuggestions.innerHTML = globalSearchCreators.map((creator) => {
     const photo = safeExternalUrl(creator.thumb);
-    return `<button class="creator-suggestion" type="button" role="option" aria-selected="false" data-creator-id="${escapeHtml(creator.id)}" data-creator-username="${escapeHtml(creator.username)}" data-creator-display="${escapeHtml(creator.display)}">${photo ? `<img src="${escapeHtml(photo)}" alt="" loading="lazy">` : '<span class="creator-suggestion-avatar" aria-hidden="true">W</span>'}<span class="creator-suggestion-identity"><strong>${escapeHtml(creator.display || creator.username)}</strong><small>@${escapeHtml(creator.username)}</small></span><span class="creator-suggestion-action">Ver perfil →</span></button>`;
+    return `<button class="creator-suggestion" type="button" role="option" aria-selected="false" data-creator-id="${escapeHtml(creator.id)}" data-creator-username="${escapeHtml(creator.username)}" data-creator-display="${escapeHtml(creator.display)}">${photo ? `<img src="${escapeHtml(photo)}" alt="" loading="lazy">` : '<span class="creator-suggestion-avatar" aria-hidden="true">W</span>'}<span class="creator-suggestion-identity"><strong>${escapeHtml(creator.display || creator.username)}</strong><small>@${escapeHtml(creator.username)}</small></span><span class="creator-suggestion-action">Ver perfil </span></button>`;
   }).join('');
   creatorSearchSuggestions.querySelectorAll('.creator-suggestion').forEach((button) => {
     button.addEventListener('click', () => {
@@ -873,13 +882,13 @@ function findPackById(packId) {
 async function toggleFavoritePack(packId) {
   const pack = findPackById(packId);
   if (!pack) {
-    setStatus('Não encontrei os dados deste pack para salvar nos favoritos.');
+    setStatus('N�o encontrei os dados deste pack para salvar nos favoritos.');
     return;
   }
   try {
     const result = await window.wavsResolver.toggleFavoritePack(snapshotPack(pack));
     if (!result.ok) {
-      setStatus(result.message || 'Não foi possível atualizar seus packs salvos.');
+      setStatus(result.message || 'N�o foi poss�vel atualizar seus packs salvos.');
       return;
     }
     favoritePacks = result.favoritePacks || [];
@@ -892,10 +901,10 @@ async function toggleFavoritePack(packId) {
       const saved = favoritePacks.some((favorite) => String(favorite.id) === String(packId));
       detailButton.classList.toggle('is-saved', saved);
       detailButton.setAttribute('aria-pressed', String(saved));
-      detailButton.textContent = saved ? '♥ Pack salvo' : '♡ Salvar pack';
+      detailButton.textContent = saved ? ' Pack salvo' : '? Salvar pack';
     }
   } catch (error) {
-    setStatus(error.message || 'Não foi possível atualizar seus packs salvos.');
+    setStatus(error.message || 'N�o foi poss�vel atualizar seus packs salvos.');
   }
 }
 
@@ -929,12 +938,12 @@ function renderHomeHighlights() {
         ${cover ? `<img class="featured-cover" src="${escapeHtml(cover)}" alt="" loading="eager">` : '<div class="featured-art-fallback">W</div>'}
         <div class="featured-art-shade"></div>
         <div class="featured-copy">
-          <span class="featured-kicker">EM DESTAQUE · WAVS</span>
+          <span class="featured-kicker">EM DESTAQUE � WAVS</span>
           <h2>${escapeHtml(featured.title)}</h2>
-          <p>${escapeHtml(featured.user?.display || featured.user?.username || 'Criador WAVS')} · ${Number(featured.audio_count || 0)} samples</p>
+          <p>${escapeHtml(featured.user?.display || featured.user?.username || 'Criador WAVS')} � ${Number(featured.audio_count || 0)} samples</p>
           <div class="featured-actions">
-            <button class="featured-open" type="button" data-pack-id="${escapeHtml(featured.id)}">Ver pack <span aria-hidden="true">→</span></button>
-            <button class="favorite-pack-button featured-favorite${saved ? ' is-saved' : ''}" type="button" data-pack-id="${escapeHtml(featured.id)}" aria-label="${saved ? 'Remover dos packs salvos' : 'Salvar pack'}" aria-pressed="${saved}">${saved ? '♥' : '♡'}</button>
+            <button class="featured-open" type="button" data-pack-id="${escapeHtml(featured.id)}">Ver pack <span aria-hidden="true"></span></button>
+            <button class="favorite-pack-button featured-favorite${saved ? ' is-saved' : ''}" type="button" data-pack-id="${escapeHtml(featured.id)}" aria-label="${saved ? 'Remover dos packs salvos' : 'Salvar pack'}" aria-pressed="${saved}">${saved ? '' : '?'}</button>
           </div>
         </div>
       </div>
@@ -1005,16 +1014,16 @@ function renderCatalog() {
     : discoveryView ? !canLoadGenrePage : !(canRevealCatalogPacks || canLoadCatalogPage));
   catalogMoreButton.disabled = globalSearchLoading || genreFilterLoading || catalogPageLoading;
   if (globalSearchLoading || genreFilterLoading || catalogPageLoading) {
-    catalogMoreButton.innerHTML = loadingIndicatorMarkup('Carregando…', 'loading-indicator-compact');
+    catalogMoreButton.innerHTML = loadingIndicatorMarkup('Carregando.', 'loading-indicator-compact');
   } else {
     catalogMoreButton.textContent = catalogPageError && !discoveryView ? 'Tentar novamente' : globalSearchMode || genreView ? 'Carregar mais resultados' : 'Ver mais';
   }
   catalogEmpty.textContent = globalSearchMode
     ? globalSearchCreators.length
-      ? `Nenhum pack encontrado para "${catalogSearchInput.value.trim()}". Para buscar por criador, selecione uma sugestão antes de pressionar Enter.`
+      ? `Nenhum pack encontrado para "${catalogSearchInput.value.trim()}". Para buscar por criador, selecione uma sugest�o antes de pressionar Enter.`
       : `Nenhum pack ou criador encontrado para "${catalogSearchInput.value.trim()}".`
     : isFavoritesView && favoritePacks.length === 0
-    ? 'Seus packs salvos aparecem aqui. Use o coração nos cards para guardar um pack.'
+    ? 'Seus packs salvos aparecem aqui. Use o cora��o nos cards para guardar um pack.'
     : isFavoritesView
       ? 'Nenhum pack salvo combina com esses filtros.'
       : 'Nenhum pack encontrado. Tente mudar os filtros.';
@@ -1025,28 +1034,28 @@ function renderCatalog() {
     : globalSearchMode ? 'Resultados da busca.'
       : genreView ? `Packs de ${genreFilterName}.`
         : 'Todos os Packs';
-  catalogEyebrow.textContent = isFavoritesView ? 'SUA COLEÇÃO · NESTE COMPUTADOR' : 'DESCOBRIR · WAVS';
+  catalogEyebrow.textContent = isFavoritesView ? 'SUA COLE��O � NESTE COMPUTADOR' : 'DESCOBRIR � WAVS';
   catalogDescription.textContent = isFavoritesView
     ? 'Packs guardados localmente para encontrar depois.'
     : globalSearchMode
-      ? 'Pesquise packs e criadores em todo o catálogo público do WAVS.'
-    : 'Explore packs novos, filtre por gênero e abra para ouvir as prévias.';
+      ? 'Pesquise packs e criadores em todo o cat�logo p�blico do WAVS.'
+    : 'Explore packs novos, filtre por g�nero e abra para ouvir as pr�vias.';
   if (globalSearchLoading) {
-    catalogStatus.innerHTML = loadingIndicatorMarkup(`Buscando packs e criadores para "${catalogSearchInput.value.trim()}" no WAVS…`);
+    catalogStatus.innerHTML = loadingIndicatorMarkup(`Buscando packs e criadores para "${catalogSearchInput.value.trim()}" no WAVS.`);
     catalogStatus.setAttribute('aria-busy', 'true');
   } else if (globalSearchError) {
     catalogStatus.textContent = globalSearchError;
     catalogStatus.setAttribute('aria-busy', 'false');
   } else if (globalSearchMode) {
-    catalogStatus.textContent = `${filteredCatalogPacks.length} packs encontrados para "${catalogSearchInput.value.trim()}"${globalSearchWarning ? ` · ${globalSearchWarning}` : ''}`;
+    catalogStatus.textContent = `${filteredCatalogPacks.length} packs encontrados para "${catalogSearchInput.value.trim()}"${globalSearchWarning ? ` � ${globalSearchWarning}` : ''}`;
     catalogStatus.setAttribute('aria-busy', 'false');
   } else if (query && query.length < 2 && catalogView !== 'favorites') {
-    catalogStatus.textContent = 'Digite pelo menos 2 caracteres para buscar no catálogo WAVS.';
+    catalogStatus.textContent = 'Digite pelo menos 2 caracteres para buscar no cat�logo WAVS.';
     catalogStatus.setAttribute('aria-busy', 'false');
   } else if (genreFilterLoading) {
     catalogStatus.innerHTML = loadingIndicatorMarkup(allPacksView
-      ? 'Carregando todos os packs recentes do WAVS…'
-      : `Buscando todos os packs de ${genreFilterName} no WAVS…`);
+      ? 'Carregando todos os packs recentes do WAVS.'
+      : `Buscando todos os packs de ${genreFilterName} no WAVS.`);
     catalogStatus.setAttribute('aria-busy', 'true');
   } else if (genreFilterError) {
     catalogStatus.textContent = genreFilterError;
@@ -1055,13 +1064,13 @@ function renderCatalog() {
     catalogStatus.textContent = 'N\u00e3o foi poss\u00edvel carregar mais packs. Tente novamente.';
     catalogStatus.setAttribute('aria-busy', 'false');
   } else if (catalogRefreshInFlight && !catalogPacks.length && !isFavoritesView) {
-    catalogStatus.innerHTML = loadingIndicatorMarkup('Carregando packs do WAVS…');
+    catalogStatus.innerHTML = loadingIndicatorMarkup('Carregando packs do WAVS.');
     catalogStatus.setAttribute('aria-busy', 'true');
   } else if (genreView) {
     catalogStatus.textContent = `${filteredCatalogPacks.length} de ${genreFilterTotal} packs de ${genreFilterName}`;
     catalogStatus.setAttribute('aria-busy', 'false');
   } else if (allPacksView) {
-    catalogStatus.textContent = `${filteredCatalogPacks.length} de ${genreFilterTotal} packs · mais recentes primeiro`;
+    catalogStatus.textContent = `${filteredCatalogPacks.length} de ${genreFilterTotal} packs � mais recentes primeiro`;
     catalogStatus.setAttribute('aria-busy', 'false');
   } else if (isFavoritesView) {
     catalogStatus.textContent = `${filteredCatalogPacks.length} de ${favoritePacks.length} packs salvos`;
@@ -1098,13 +1107,13 @@ function renderCreatorProfile() {
   }
   creatorProfilePanel.classList.remove('hidden');
   if (creatorProfileLoading) {
-    creatorProfilePanel.innerHTML = loadingIndicatorMarkup('Carregando perfil e packs do criador…', 'loading-indicator-card');
+    creatorProfilePanel.innerHTML = loadingIndicatorMarkup('Carregando perfil e packs do criador.', 'loading-indicator-card');
     creatorProfilePanel.setAttribute('aria-busy', 'true');
     return;
   }
   creatorProfilePanel.setAttribute('aria-busy', 'false');
   if (creatorProfileError || !creatorProfile) {
-    creatorProfilePanel.innerHTML = `<button class="back-home-button creator-back" type="button">← ${currentPack ? 'Voltar ao pack' : 'Voltar aos packs'}</button><p class="creator-profile-message">${escapeHtml(creatorProfileError || 'Não foi possível carregar este perfil.')}</p>`;
+    creatorProfilePanel.innerHTML = `<button class="back-home-button creator-back" type="button"> ${currentPack ? 'Voltar ao pack' : 'Voltar aos packs'}</button><p class="creator-profile-message">${escapeHtml(creatorProfileError || 'N�o foi poss�vel carregar este perfil.')}</p>`;
     creatorProfilePanel.querySelector('.creator-back').textContent = 'Voltar';
     creatorProfilePanel.querySelector('.creator-back').addEventListener('click', navigateBack);
     return;
@@ -1120,9 +1129,9 @@ function renderCreatorProfile() {
   const startPack = creatorProfile.totalPacks ? (creatorProfilePage - 1) * 30 + 1 : 0;
   const endPack = Math.min(creatorProfilePage * 30, creatorProfile.totalPacks);
   const profilePagination = creatorProfileLastPage > 1
-    ? `<nav class="creator-profile-pagination" aria-label="Paginação dos packs do criador"><span>${creatorProfilePageLoading ? 'Carregando página…' : `Mostrando ${startPack}–${endPack} de ${creatorProfile.totalPacks} packs`}</span><div><button class="creator-page-previous" type="button" ${creatorProfilePage <= 1 || creatorProfilePageLoading ? 'disabled' : ''}>← Anterior</button><span>Página ${creatorProfilePage} de ${creatorProfileLastPage}</span><button class="creator-page-next" type="button" ${creatorProfilePage >= creatorProfileLastPage || creatorProfilePageLoading ? 'disabled' : ''}>Próxima →</button></div></nav>`
+    ? `<nav class="creator-profile-pagination" aria-label="Pagina��o dos packs do criador"><span>${creatorProfilePageLoading ? 'Carregando p�gina.' : `Mostrando ${startPack}-${endPack} de ${creatorProfile.totalPacks} packs`}</span><div><button class="creator-page-previous" type="button" ${creatorProfilePage <= 1 || creatorProfilePageLoading ? 'disabled' : ''}> Anterior</button><span>P�gina ${creatorProfilePage} de ${creatorProfileLastPage}</span><button class="creator-page-next" type="button" ${creatorProfilePage >= creatorProfileLastPage || creatorProfilePageLoading ? 'disabled' : ''}>Pr�xima </button></div></nav>`
     : `<p class="creator-packs-count">${creatorProfile.totalPacks} packs encontrados</p>`;
-  const profileMarkup = `<div class="creator-profile-heading"><button class="back-home-button creator-back" type="button">← ${currentPack ? 'Voltar ao pack' : 'Voltar aos packs'}</button><div class="creator-profile-main">${photo ? `<img class="creator-profile-photo" src="${escapeHtml(photo)}" alt="Foto de ${escapeHtml(creator.display || creator.username || 'criador')}" loading="lazy">` : '<div class="creator-profile-photo creator-avatar-fallback">W</div>'}<div class="creator-profile-identity"><p class="catalog-eyebrow">PERFIL DO CRIADOR</p><h2>${escapeHtml(creator.display || creator.username || 'Criador WAVS')}</h2><p class="creator-username">@${escapeHtml(creator.username || '')}</p></div></div><p class="creator-bio">${escapeHtml(creator.bio || 'Este criador ainda não adicionou uma biografia.')}</p>${credits.length ? `<p class="creator-credits"><strong>Créditos de produção</strong><span>${credits.map(escapeHtml).join(' · ')}</span></p>` : ''}<div class="creator-profile-meta"><span>${creatorProfile.totalPacks} packs</span><span>${Number(creator.audio_count || 0)} samples</span>${creator.is_top_seller ? '<span>Criador em destaque</span>' : ''}</div>${socialLinks.length ? `<nav class="creator-social" aria-label="Links do criador">${socialLinks.map(([name, url]) => `<a href="${escapeHtml(safeExternalUrl(url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(String(name).replace(/_/g, ' '))} ↗</a>`).join('')}</nav>` : ''}</div><h3 class="creator-packs-heading">Packs de ${escapeHtml(creator.display || creator.username || 'este criador')}</h3><div class="catalog-list creator-packs">${creatorProfile.packs.map(packCardMarkup).join('')}</div>${creatorProfile.packs.length ? profilePagination : '<p class="catalog-empty">Este criador ainda não tem packs publicados.</p>'}`;
+  const profileMarkup = `<div class="creator-profile-heading"><button class="back-home-button creator-back" type="button"> ${currentPack ? 'Voltar ao pack' : 'Voltar aos packs'}</button><div class="creator-profile-main">${photo ? `<img class="creator-profile-photo" src="${escapeHtml(photo)}" alt="Foto de ${escapeHtml(creator.display || creator.username || 'criador')}" loading="lazy">` : '<div class="creator-profile-photo creator-avatar-fallback">W</div>'}<div class="creator-profile-identity"><p class="catalog-eyebrow">PERFIL DO CRIADOR</p><h2>${escapeHtml(creator.display || creator.username || 'Criador WAVS')}</h2><p class="creator-username">@${escapeHtml(creator.username || '')}</p></div></div><p class="creator-bio">${escapeHtml(creator.bio || 'Este criador ainda n�o adicionou uma biografia.')}</p>${credits.length ? `<p class="creator-credits"><strong>Cr�ditos de produ��o</strong><span>${credits.map(escapeHtml).join(' � ')}</span></p>` : ''}<div class="creator-profile-meta"><span>${creatorProfile.totalPacks} packs</span><span>${Number(creator.audio_count || 0)} samples</span>${creator.is_top_seller ? '<span>Criador em destaque</span>' : ''}</div>${socialLinks.length ? `<nav class="creator-social" aria-label="Links do criador">${socialLinks.map(([name, url]) => `<a href="${escapeHtml(safeExternalUrl(url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(String(name).replace(/_/g, ' '))} ?</a>`).join('')}</nav>` : ''}</div><h3 class="creator-packs-heading">Packs de ${escapeHtml(creator.display || creator.username || 'este criador')}</h3><div class="catalog-list creator-packs">${creatorProfile.packs.map(packCardMarkup).join('')}</div>${creatorProfile.packs.length ? profilePagination : '<p class="catalog-empty">Este criador ainda n�o tem packs publicados.</p>'}`;
   creatorProfilePanel.innerHTML = profileMarkup;
   creatorProfilePanel.querySelector('.creator-back').textContent = 'Voltar';
   creatorProfilePanel.querySelector('.creator-back').addEventListener('click', navigateBack);
@@ -1172,7 +1181,7 @@ async function openCreatorProfile(creator, page = 1, updateHistory = true) {
   try {
     const result = await window.wavsResolver.loadCreatorProfile(creator.id, creator.username, creator.display, page);
     if (requestVersion !== creatorProfileRequestVersion) return;
-    if (!result.ok) throw new Error(result.message || 'Não consegui carregar o perfil deste criador.');
+    if (!result.ok) throw new Error(result.message || 'N�o consegui carregar o perfil deste criador.');
     creatorProfile = {
       ...result,
       packs: Array.isArray(result.packs) ? result.packs : []
@@ -1182,7 +1191,7 @@ async function openCreatorProfile(creator, page = 1, updateHistory = true) {
     creatorProfile.totalPacks = Number(result.totalPacks) || creatorProfile.packs.length;
   } catch (error) {
     if (requestVersion !== creatorProfileRequestVersion) return;
-    creatorProfileError = error.message || 'Não consegui carregar o perfil deste criador.';
+    creatorProfileError = error.message || 'N�o consegui carregar o perfil deste criador.';
   } finally {
     if (requestVersion === creatorProfileRequestVersion) {
       creatorProfileLoading = false;
@@ -1207,7 +1216,7 @@ async function searchWavsPacks(query, page = 1, append = false) {
     const creator = append ? globalSearchCreator : null;
     const result = await window.wavsResolver.searchPacks(query, page, creator);
     if (requestVersion !== globalSearchRequestVersion || catalogSearchInput.value.trim() !== query) return;
-    if (!result.ok) throw new Error(result.message || 'Não consegui pesquisar no WAVS.');
+    if (!result.ok) throw new Error(result.message || 'N�o consegui pesquisar no WAVS.');
     const newPacks = Array.isArray(result.packs) ? result.packs : [];
     const packsById = new Map((append ? globalSearchPacks : []).map((pack) => [String(pack.id), pack]));
     for (const pack of newPacks) {
@@ -1280,7 +1289,7 @@ function handleStartupPackUpdates(packs) {
   ))];
   const creatorNames = creators.slice(0, 3);
   if (creators.length > creatorNames.length) creatorNames.push(`mais ${creators.length - creatorNames.length}`);
-  const titles = newlyPublished.slice(0, 3).map((pack) => pack.title || 'Pack sem título');
+  const titles = newlyPublished.slice(0, 3).map((pack) => pack.title || 'Pack sem t�tulo');
   if (newlyPublished.length > titles.length) titles.push(`mais ${newlyPublished.length - titles.length}`);
   const titleList = formatPortugueseNameList(titles);
   const creatorList = formatPortugueseNameList(creatorNames);
@@ -1295,11 +1304,11 @@ async function loadNewPacks({ quiet = false } = {}) {
   if (catalogRefreshInFlight) return;
   catalogRefreshInFlight = true;
   refreshCatalogButton.disabled = true;
-  refreshCatalogButton.innerHTML = loadingIndicatorMarkup('Atualizando…', 'loading-indicator-compact');
+  refreshCatalogButton.innerHTML = loadingIndicatorMarkup('Atualizando.', 'loading-indicator-compact');
   if (!quiet && canShowCatalogRefreshStatus()) {
     if (!catalogPacks.length) renderCatalog();
     else {
-      catalogStatus.innerHTML = loadingIndicatorMarkup('Carregando packs novos do WAVS…');
+      catalogStatus.innerHTML = loadingIndicatorMarkup('Carregando packs novos do WAVS.');
       catalogStatus.setAttribute('aria-busy', 'true');
     }
   }
@@ -1308,8 +1317,8 @@ async function loadNewPacks({ quiet = false } = {}) {
     if (!result.ok) {
       if (canShowCatalogRefreshStatus()) {
         catalogStatus.textContent = catalogPacks.length
-          ? `Não foi possível atualizar o catálogo; mantendo os packs carregados. ${result.message || ''}`.trim()
-          : result.message || 'Não consegui carregar os packs novos.';
+          ? `N�o foi poss�vel atualizar o cat�logo; mantendo os packs carregados. ${result.message || ''}`.trim()
+          : result.message || 'N�o consegui carregar os packs novos.';
         catalogStatus.setAttribute('aria-busy', 'false');
       }
       return;
@@ -1334,15 +1343,15 @@ async function loadNewPacks({ quiet = false } = {}) {
     }
     const updatedAt = new Date();
     if (canShowCatalogRefreshStatus()) {
-      catalogStatus.textContent = `${filteredCatalogPacks.length} de ${catalogPacks.length} packs · atualizado às ${updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${addedCount ? ` · ${addedCount} novo${addedCount === 1 ? '' : 's'}` : ''}`;
+      catalogStatus.textContent = `${filteredCatalogPacks.length} de ${catalogPacks.length} packs � atualizado �s ${updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${addedCount ? ` � ${addedCount} novo${addedCount === 1 ? '' : 's'}` : ''}`;
       catalogStatus.setAttribute('aria-busy', 'false');
     }
     lastCatalogRefreshAt = Date.now();
   } catch (error) {
     if (canShowCatalogRefreshStatus()) {
       catalogStatus.textContent = catalogPacks.length
-        ? `Não foi possível atualizar o catálogo; mantendo os packs carregados. ${error.message || ''}`.trim()
-        : error.message || 'Não consegui carregar os packs novos do WAVS.';
+        ? `N�o foi poss�vel atualizar o cat�logo; mantendo os packs carregados. ${error.message || ''}`.trim()
+        : error.message || 'N�o consegui carregar os packs novos do WAVS.';
       catalogStatus.setAttribute('aria-busy', 'false');
     }
   } finally {
@@ -1351,7 +1360,7 @@ async function loadNewPacks({ quiet = false } = {}) {
       catalogList.replaceChildren();
     }
     refreshCatalogButton.disabled = false;
-    refreshCatalogButton.textContent = '↻ Atualizar';
+    refreshCatalogButton.textContent = '? Atualizar';
   }
 }
 
@@ -1411,7 +1420,7 @@ async function loadDiscoveryPacks(filterId, filterName, page = 1, append = false
   try {
     const result = await window.wavsResolver.loadGenrePacks(filterId, page);
     if (requestVersion !== catalogRequestVersion || genreFilterId !== filterId) return;
-    if (!result.ok) throw new Error(result.message || `Não consegui carregar os packs de ${filterName}.`);
+    if (!result.ok) throw new Error(result.message || `N�o consegui carregar os packs de ${filterName}.`);
     if (append) {
       const existingIds = new Set(discoveryPacks.map((pack) => String(pack.id)));
       const newPacks = result.packs.filter((pack) => pack?.id !== undefined && !existingIds.has(String(pack.id)));
@@ -1427,8 +1436,8 @@ async function loadDiscoveryPacks(filterId, filterName, page = 1, append = false
   } catch (error) {
     if (requestVersion !== catalogRequestVersion || genreFilterId !== filterId) return;
     genreFilterError = error.message || (filterId === 'all'
-      ? 'Não consegui carregar o catálogo completo.'
-      : `Não consegui carregar os packs de ${filterName}.`);
+      ? 'N�o consegui carregar o cat�logo completo.'
+      : `N�o consegui carregar os packs de ${filterName}.`);
     if (!append) discoveryPacks = [];
   } finally {
     if (requestVersion === catalogRequestVersion && genreFilterId === filterId) {
@@ -1601,13 +1610,13 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
   const previousView = history.state?.wavsResolverPackView
     ? history.state.wavsResolverPreviousView
     : capturePreviousView();
-  const loadButtonLabel = 'Mostrar pack →';
+  const loadButtonLabel = 'Mostrar pack ';
   if (creatorProfile || creatorProfileLoading || creatorProfileError) closeCreatorProfile();
   input.value = link;
   loadButton.disabled = true;
-  loadButton.innerHTML = loadingIndicatorMarkup('Carregando…', 'loading-indicator-compact');
+  loadButton.innerHTML = loadingIndicatorMarkup('Carregando.', 'loading-indicator-compact');
   stopBottomPlayer();
-  panel.innerHTML = loadingIndicatorMarkup('Carregando o pack e a lista de samples…', 'loading-indicator-card');
+  panel.innerHTML = loadingIndicatorMarkup('Carregando o pack e a lista de samples.', 'loading-indicator-card');
   panel.setAttribute('aria-busy', 'true');
   panel.classList.remove('hidden');
   document.body.classList.add('pack-view-active');
@@ -1649,7 +1658,7 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
     panel.classList.add('hidden');
     panel.setAttribute('aria-busy', 'false');
     document.body.classList.remove('pack-view-active');
-    const message = error.message || 'Não consegui carregar o pack.';
+    const message = error.message || 'N�o consegui carregar o pack.';
     setStatus(message);
     if (scrollToPack) catalogStatus.textContent = message;
   } finally {
@@ -1721,16 +1730,16 @@ function drawWaveform(canvas, peaks, progress = 0) {
   let layers = layersBySize.get(layerKey);
   if (!layers) {
     const center = height / 2;
-    const drawShape = (layerContext) => {
+    const drawShape = (layerContext, padding = 0) => {
       layerContext.beginPath();
-      layerContext.moveTo(0, center);
+      layerContext.moveTo(padding, center + padding);
       for (let index = 0; index < normalized.length; index += 1) {
-        const x = index / (normalized.length - 1) * width;
-        layerContext.lineTo(x, center - Math.max(1, normalized[index] * height * 0.48));
+        const x = index / (normalized.length - 1) * width + padding;
+        layerContext.lineTo(x, center + padding - Math.max(1, normalized[index] * height * 0.48));
       }
       for (let index = normalized.length - 1; index >= 0; index -= 1) {
-        const x = index / (normalized.length - 1) * width;
-        layerContext.lineTo(x, center + Math.max(1, normalized[index] * height * 0.48));
+        const x = index / (normalized.length - 1) * width + padding;
+        layerContext.lineTo(x, center + padding + Math.max(1, normalized[index] * height * 0.48));
       }
       layerContext.closePath();
     };
@@ -1755,7 +1764,26 @@ function drawWaveform(canvas, peaks, progress = 0) {
     gradient.addColorStop(1, waveformPalette.end);
     activeContext.fillStyle = gradient;
     activeContext.fill();
-    layers = { idle, active };
+
+    // Give the canvas shadow room beyond the waveform's near-edge peaks, then erase
+    // its solid center so only a soft, contour-following halo remains.
+    const glowPadding = Math.ceil(12 * scale);
+    const glow = document.createElement('canvas');
+    glow.width = width + glowPadding * 2;
+    glow.height = height + glowPadding * 2;
+    const glowContext = glow.getContext('2d');
+    if (!glowContext) return;
+    drawShape(glowContext, glowPadding);
+    glowContext.fillStyle = '#fff';
+    glowContext.shadowColor = 'rgba(255,255,255,.9)';
+    glowContext.shadowBlur = 8 * scale;
+    glowContext.fill();
+    glowContext.globalCompositeOperation = 'destination-out';
+    glowContext.shadowBlur = 0;
+    drawShape(glowContext, glowPadding);
+    glowContext.fill();
+
+    layers = { idle, active, glow, glowPadding };
     layersBySize.set(layerKey, layers);
   }
   const previousProgressPixel = sameBase ? canvas._waveformProgressPixel : -1;
@@ -1773,11 +1801,7 @@ function drawWaveform(canvas, peaks, progress = 0) {
     context.clip();
     const glowActiveSegment = hoverState;
     if (glowActiveSegment) {
-      context.shadowColor = 'rgba(255,255,255,.9)';
-      context.shadowBlur = 8 * scale;
-      context.drawImage(layers.active, 0, 0);
-      context.shadowColor = 'transparent';
-      context.shadowBlur = 0;
+      context.drawImage(layers.glow, -layers.glowPadding, -layers.glowPadding);
     }
     context.drawImage(layers.active, 0, 0);
     context.restore();
@@ -1794,7 +1818,7 @@ function getWaveformPeaks(url) {
       waveformTaskQueue.push(async () => {
         try {
           const response = await fetch(url, { signal: AbortSignal.timeout(20_000) });
-          if (!response.ok) throw new Error(`O WAVS respondeu ${response.status} ao carregar a prévia.`);
+          if (!response.ok) throw new Error(`O WAVS respondeu ${response.status} ao carregar a pr�via.`);
           const audioData = await response.arrayBuffer();
           audioContext ||= new AudioContext();
           const decoded = await audioContext.decodeAudioData(audioData);
@@ -1892,7 +1916,7 @@ function setupSamplePlayers(samples) {
       if (!waveform.isConnected) return;
       waveform.classList.remove('waveform-loading');
       waveform.classList.add('waveform-unavailable');
-      waveform.title = error.message || 'A waveform desta prévia está indisponível.';
+      waveform.title = error.message || 'A waveform desta pr�via est� indispon�vel.';
     });
   }
 }
@@ -1916,7 +1940,7 @@ function updateBottomPlayer() {
     bottomPlayerWaveform.setAttribute('aria-valuenow', progressValue);
   }
   bottomPlayerToggle.classList.toggle('is-playing', !bottomPlayerAudio.paused);
-  bottomPlayerToggle.setAttribute('aria-label', bottomPlayerAudio.paused ? 'Reproduzir prévia' : 'Pausar prévia');
+  bottomPlayerToggle.setAttribute('aria-label', bottomPlayerAudio.paused ? 'Reproduzir pr�via' : 'Pausar pr�via');
   bottomPlayerRepeat.classList.toggle('is-active', bottomPlayerAudio.loop);
   bottomPlayerRepeat.setAttribute('aria-pressed', String(bottomPlayerAudio.loop));
   bottomPlayerPrevious.disabled = Boolean(activePackPreviewId) || findAdjacentPlayableSample(-1) < 0;
@@ -1929,8 +1953,8 @@ function updateBottomPlayer() {
   for (const button of panel.querySelectorAll('.sample-play')) {
     const isActive = Number(button.dataset.sampleIndex) === activeSampleIndex && !bottomPlayerAudio.paused;
     button.closest('.sample')?.classList.toggle('sample-current', Number(button.dataset.sampleIndex) === activeSampleIndex);
-    button.textContent = isActive ? 'Ⅱ' : '▶';
-    button.setAttribute('aria-label', isActive ? 'Pausar prévia' : 'Reproduzir prévia');
+    button.textContent = isActive ? '?' : '?';
+    button.setAttribute('aria-label', isActive ? 'Pausar pr�via' : 'Reproduzir pr�via');
   }
   for (const waveform of panel.querySelectorAll('.sample-waveform')) {
     const isActive = Number(waveform.dataset.sampleIndex) === activeSampleIndex;
@@ -2016,8 +2040,8 @@ async function playSample(index) {
   activePackPreviewId = null;
   activeSampleIndex = index;
   showBottomPlayer();
-  bottomPlayerTitle.textContent = sample.title || 'Prévia WAVS';
-  bottomPlayerSubtitle.textContent = `${currentPack.pack.title || 'Pack WAVS'} · ${sample.user_display || sample.user_username || currentPack.pack.user?.display || currentPack.pack.user?.username || 'Criador WAVS'}`;
+  bottomPlayerTitle.textContent = sample.title || 'Pr�via WAVS';
+  bottomPlayerSubtitle.textContent = `${currentPack.pack.title || 'Pack WAVS'} � ${sample.user_display || sample.user_username || currentPack.pack.user?.display || currentPack.pack.user?.username || 'Criador WAVS'}`;
   const cover = coverUrl(currentPack.pack);
   bottomPlayerCover.classList.toggle('hidden', !cover);
   bottomPlayerCoverFallback.classList.toggle('hidden', Boolean(cover));
@@ -2053,7 +2077,7 @@ async function playSample(index) {
   try {
     await bottomPlayerAudio.play();
   } catch (error) {
-    setDownloadStatus(error.message || 'Não foi possível reproduzir esta prévia.', false, presentation);
+    setDownloadStatus(error.message || 'N�o foi poss�vel reproduzir esta pr�via.', false, presentation);
   }
 }
 
@@ -2061,19 +2085,19 @@ function renderSample(sample, pack, index) {
   const details = sampleDetails(sample);
   const detailsMarkup = details.length
     ? details.map(({ label, value }) => `<span class="sample-detail"><span>${escapeHtml(label)}</span>${escapeHtml(value)}</span>`).join('')
-    : '<span class="sample-meta">BPM, tom e estilo indisponíveis</span>';
+    : '<span class="sample-meta">BPM, tom e estilo indispon�veis</span>';
   const author = sample.user_display || sample.user_username || pack.user?.display || pack.user?.username || '';
   const cover = coverUrl(pack);
   const coverMarkup = cover
     ? `<img class="sample-cover" src="${escapeHtml(cover)}" alt="" loading="lazy">`
     : '<span class="sample-cover sample-cover-fallback" aria-hidden="true">W</span>';
   const waveform = sample.mp3
-     ? `<canvas class="sample-waveform waveform-loading" data-url="${escapeHtml(sample.mp3)}" data-sample-index="${index}" role="slider" aria-label="Posição da prévia da sample" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-disabled="true" tabindex="-1"></canvas>`
-    : '<span class="sample-waveform-empty">Sem prévia</span>';
+     ? `<canvas class="sample-waveform waveform-loading" data-url="${escapeHtml(sample.mp3)}" data-sample-index="${index}" role="slider" aria-label="Posi��o da pr�via da sample" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-disabled="true" tabindex="-1"></canvas>`
+    : '<span class="sample-waveform-empty">Sem pr�via</span>';
   const player = sample.mp3
     ? `<button class="sample-download" type="button" data-url="${escapeHtml(sample.mp3)}" data-title="${escapeHtml(sample.title)}" data-tempo="${escapeHtml(sample.tempo || '')}" data-author="${escapeHtml(author)}">Baixar MP3</button>`
-    : '<span class="sample-meta">Prévia indisponível</span>';
-  return `<article class="sample${index === activeSampleIndex ? ' sample-current' : ''}"><button class="sample-play" type="button" data-sample-index="${index}" aria-label="Reproduzir prévia" ${sample.mp3 ? '' : 'disabled'}>${index === activeSampleIndex && !bottomPlayerAudio.paused ? 'Ⅱ' : '▶'}</button>${coverMarkup}<div class="sample-waveform-wrap">${waveform}</div><div class="sample-content"><div class="sample-title" title="${escapeHtml(sample.title)}">${escapeHtml(sample.title)}</div><div class="sample-details">${detailsMarkup}</div></div>${player}</article>`;
+    : '<span class="sample-meta">Pr�via indispon�vel</span>';
+  return `<article class="sample${index === activeSampleIndex ? ' sample-current' : ''}"><button class="sample-play" type="button" data-sample-index="${index}" aria-label="Reproduzir pr�via" ${sample.mp3 ? '' : 'disabled'}>${index === activeSampleIndex && !bottomPlayerAudio.paused ? '?' : '?'}</button>${coverMarkup}<div class="sample-waveform-wrap">${waveform}</div><div class="sample-content"><div class="sample-title" title="${escapeHtml(sample.title)}">${escapeHtml(sample.title)}</div><div class="sample-details">${detailsMarkup}</div></div>${player}</article>`;
 }
 
 function renderSamplePage() {
@@ -2132,7 +2156,7 @@ function renderPack(result) {
   const creator = pack.user || {};
   const genres = (pack.genres || []).map((genre) => typeof genre === 'string' ? genre : genre?.title).filter(Boolean);
   const saved = favoritePacks.some((favorite) => String(favorite.id) === String(pack.id));
-  panel.innerHTML = `<div class="pack-navigation"><button id="back-home" class="back-home-button" type="button">← Voltar à home</button></div><div class="pack-head">${cover ? `<img class="pack-cover" src="${escapeHtml(cover)}" alt="Capa de ${escapeHtml(pack.title)}">` : '<div class="pack-cover"></div>'}<div class="pack-info"><button class="pack-creator" type="button" data-creator-id="${escapeHtml(creator.id ?? '')}" data-creator-username="${escapeHtml(creator.username ?? '')}" data-creator-display="${escapeHtml(creator.display || creator.username || 'Criador WAVS')}">${escapeHtml(creator.display || creator.username || 'Criador WAVS')}</button><h2 class="pack-title">${escapeHtml(pack.title)}</h2><p class="pack-description">${escapeHtml(plainDescription(pack.description))}</p><div class="chips">${genres.map((genre) => `<span class="chip">${escapeHtml(genre)}</span>`).join('')}<span class="chip">${escapeHtml(formatPackDate(pack))}</span>${pack.is_free ? '<span class="chip">Gratuito</span>' : ''}</div><div class="pack-actions"><span class="sample-count">${Number(result.sampleCount || result.samples.length)} samples</span><button class="back-home-button pack-favorite${saved ? ' is-saved' : ''}" type="button" aria-pressed="${saved}">${saved ? '♥ Pack salvo' : '♡ Salvar pack'}</button></div></div></div><div class="samples-head"><span>Samples do pack</span><span>Prévia · BPM · tom · estilo</span></div><div class="sample-toolbar"><label class="sample-search"><span aria-hidden="true">⌕</span><input id="sample-search" type="search" placeholder="Buscar por nome…" autocomplete="off" aria-label="Buscar samples por nome"></label><span id="sample-filter-status" class="sample-filter-status"></span></div><div class="sample-list"></div><nav id="samples-pagination" class="samples-pagination hidden" aria-label="Paginação das samples"><button id="samples-previous" type="button" aria-label="Página anterior">← Anterior</button><span id="samples-page-status"></span><button id="samples-next" type="button" aria-label="Próxima página">Próxima →</button></nav>`;
+  panel.innerHTML = `<div class="pack-navigation"><button id="back-home" class="back-home-button" type="button"> Voltar � home</button></div><div class="pack-head">${cover ? `<img class="pack-cover" src="${escapeHtml(cover)}" alt="Capa de ${escapeHtml(pack.title)}">` : '<div class="pack-cover"></div>'}<div class="pack-info"><button class="pack-creator" type="button" data-creator-id="${escapeHtml(creator.id ?? '')}" data-creator-username="${escapeHtml(creator.username ?? '')}" data-creator-display="${escapeHtml(creator.display || creator.username || 'Criador WAVS')}">${escapeHtml(creator.display || creator.username || 'Criador WAVS')}</button><h2 class="pack-title">${escapeHtml(pack.title)}</h2><p class="pack-description">${escapeHtml(plainDescription(pack.description))}</p><div class="chips">${genres.map((genre) => `<span class="chip">${escapeHtml(genre)}</span>`).join('')}<span class="chip">${escapeHtml(formatPackDate(pack))}</span>${pack.is_free ? '<span class="chip">Gratuito</span>' : ''}</div><div class="pack-actions"><span class="sample-count">${Number(result.sampleCount || result.samples.length)} samples</span><button class="back-home-button pack-favorite${saved ? ' is-saved' : ''}" type="button" aria-pressed="${saved}">${saved ? ' Pack salvo' : '? Salvar pack'}</button></div></div></div><div class="samples-head"><span>Samples do pack</span><span>Pr�via � BPM � tom � estilo</span></div><div class="sample-toolbar"><label class="sample-search"><span aria-hidden="true">?</span><input id="sample-search" type="search" placeholder="Buscar por nome." autocomplete="off" aria-label="Buscar samples por nome"></label><span id="sample-filter-status" class="sample-filter-status"></span></div><div class="sample-list"></div><nav id="samples-pagination" class="samples-pagination hidden" aria-label="Pagina��o das samples"><button id="samples-previous" type="button" aria-label="P�gina anterior"> Anterior</button><span id="samples-page-status"></span><button id="samples-next" type="button" aria-label="Pr�xima p�gina">Pr�xima </button></nav>`;
   panel.classList.remove('hidden');
   const packBackButton = panel.querySelector('#back-home');
   packBackButton.textContent = 'Voltar';
@@ -2144,8 +2168,8 @@ function renderPack(result) {
   packDownloadButton.textContent = activePackDownload ? 'Download em andamento' : 'Baixar pack';
   packDownloadButton.disabled = Boolean(activePackDownload) || !result.samples.some((sample) => sample?.mp3);
   packDownloadButton.dataset.loading = String(Boolean(activePackDownload));
-  packDownloadButton.setAttribute('aria-label', `Baixar todas as prévias MP3 de ${pack.title}`);
-  packDownloadButton.title = 'Baixar as prévias disponíveis em uma pasta com o nome do pack';
+  packDownloadButton.setAttribute('aria-label', `Baixar todas as pr�vias MP3 de ${pack.title}`);
+  packDownloadButton.title = 'Baixar as pr�vias dispon�veis em uma pasta com o nome do pack';
   packDownloadButton.addEventListener('click', () => downloadEntirePack(packDownloadButton));
   packActions.insertBefore(packDownloadButton, panel.querySelector('.pack-favorite'));
   panel.querySelector('.pack-favorite').addEventListener('click', () => toggleFavoritePack(pack.id));
@@ -2187,9 +2211,9 @@ async function downloadSample(button) {
       setDownloadStatus(presentation.title, true, presentation);
       return;
     }
-    setDownloadStatus(result.message || 'Não consegui baixar esta prévia MP3.', false, presentation);
+    setDownloadStatus(result.message || 'N�o consegui baixar esta pr�via MP3.', false, presentation);
   } catch (error) {
-    setDownloadStatus(error.message || 'Não consegui baixar esta prévia MP3.', false, presentation);
+    setDownloadStatus(error.message || 'N�o consegui baixar esta pr�via MP3.', false, presentation);
   } finally {
     button.disabled = false;
   }
@@ -2211,7 +2235,7 @@ async function downloadEntirePack(button) {
   const samples = Array.isArray(currentPack.samples) ? currentPack.samples : [];
   const downloadable = samples.filter((sample) => sample?.mp3);
   if (!downloadable.length) {
-    setDownloadStatus('Este pack não tem prévias MP3 para baixar.', false, { title: pack.title, cover });
+    setDownloadStatus('Este pack n�o tem pr�vias MP3 para baixar.', false, { title: pack.title, cover });
     return;
   }
 
@@ -2334,7 +2358,7 @@ async function downloadEntirePack(button) {
     downloadProgressBar.classList.add('hidden');
     cancelDownloadButton.classList.add('hidden');
     activePackDownload = null;
-    setDownloadStatus(error.message || 'Não consegui baixar o pack inteiro.', false, { title: pack.title, cover });
+    setDownloadStatus(error.message || 'N�o consegui baixar o pack inteiro.', false, { title: pack.title, cover });
   } finally {
     if (activePackDownload === task) activePackDownload = null;
     chooseSampleDestinationButton.disabled = previousFolderButtonDisabled;
@@ -2356,7 +2380,7 @@ async function downloadEntirePack(button) {
 }
 
 async function updateSampleDownloadDirectory() {
-  sampleDestinationPath.innerHTML = loadingIndicatorMarkup('Carregando pasta…', 'loading-indicator-compact');
+  sampleDestinationPath.innerHTML = loadingIndicatorMarkup('Carregando pasta.', 'loading-indicator-compact');
   sampleDestinationPath.setAttribute('aria-busy', 'true');
   sampleDestinationPath.textContent = await window.wavsResolver.getSampleDownloadDirectory();
   sampleDestinationPath.setAttribute('aria-busy', 'false');
@@ -2364,7 +2388,7 @@ async function updateSampleDownloadDirectory() {
 chooseSampleDestinationButton.addEventListener('click', async () => {
   const originalLabel = chooseSampleDestinationButton.textContent;
   chooseSampleDestinationButton.disabled = true;
-  chooseSampleDestinationButton.innerHTML = loadingIndicatorMarkup('Abrindo…', 'loading-indicator-compact');
+  chooseSampleDestinationButton.innerHTML = loadingIndicatorMarkup('Abrindo.', 'loading-indicator-compact');
   try {
     const result = await window.wavsResolver.chooseSampleDownloadDirectory();
     if (result.error) {
@@ -2374,7 +2398,7 @@ chooseSampleDestinationButton.addEventListener('click', async () => {
     sampleDestinationPath.textContent = result.path;
     if (!result.cancelled) setStatus('Pasta das samples atualizada.', true);
   } catch (error) {
-    setStatus(error.message || 'Não foi possível escolher a pasta das samples.');
+    setStatus(error.message || 'N�o foi poss�vel escolher a pasta das samples.');
   } finally {
     chooseSampleDestinationButton.disabled = false;
     chooseSampleDestinationButton.textContent = originalLabel;
@@ -2473,7 +2497,7 @@ catalogGenreSelect.addEventListener('change', () => {
     genreFilterLastPage = 0;
     genreFilterTotal = 0;
     if (catalogGenreSelect.value && catalogView !== 'favorites' && !genreId) {
-      genreFilterError = 'Não encontrei o identificador deste gênero no catálogo. Atualize os packs e tente novamente.';
+      genreFilterError = 'N�o encontrei o identificador deste g�nero no cat�logo. Atualize os packs e tente novamente.';
     }
     renderCatalog();
     return;
@@ -2560,7 +2584,12 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+function syncPlayerVolumeControl() {
+  const volume = Math.max(0, Math.min(1, Number(bottomPlayerVolume.value) || 0));
+  bottomPlayerVolume.style.setProperty('--volume-level', `${volume * 100}%`);
+}
 bottomPlayerAudio.volume = Number(bottomPlayerVolume.value);
+syncPlayerVolumeControl();
 themeToggleButton.addEventListener('click', () => {
   const nextTheme = document.body.dataset.theme === 'light' ? 'dark' : 'light';
   themeChangedBeforePreferencesLoaded = true;
@@ -2576,6 +2605,7 @@ function savePlayerVolumePreference() {
 }
 bottomPlayerVolume.addEventListener('input', () => {
   bottomPlayerAudio.volume = Number(bottomPlayerVolume.value);
+  syncPlayerVolumeControl();
   volumeChangedBeforePreferencesLoaded = true;
   savePlayerVolumePreference();
 });
@@ -2587,14 +2617,15 @@ window.wavsResolver.getAppPreferences().then((preferences) => {
   if (!volumeChangedBeforePreferencesLoaded && Number.isFinite(preferences.playerVolume)) {
     bottomPlayerVolume.value = String(preferences.playerVolume);
     bottomPlayerAudio.volume = preferences.playerVolume;
+    syncPlayerVolumeControl();
   }
   if (!themeChangedBeforePreferencesLoaded) applyTheme(preferences.theme);
 }).catch((error) => {
-  setStatus(error.message || 'Não foi possível carregar as preferências do app.');
+  setStatus(error.message || 'N�o foi poss�vel carregar as prefer�ncias do app.');
 });
 bottomPlayerToggle.addEventListener('click', () => {
   if (!bottomPlayerAudio.src) return;
-  if (bottomPlayerAudio.paused) bottomPlayerAudio.play().catch((error) => setDownloadStatus(error.message || 'Não foi possível reproduzir esta prévia.'));
+  if (bottomPlayerAudio.paused) bottomPlayerAudio.play().catch((error) => setDownloadStatus(error.message || 'N�o foi poss�vel reproduzir esta pr�via.'));
   else bottomPlayerAudio.pause();
 });
 bottomPlayerPrevious.addEventListener('click', () => {
@@ -2608,14 +2639,14 @@ bottomPlayerNext.addEventListener('click', () => {
 bottomPlayerRepeat.addEventListener('click', () => {
   bottomPlayerAudio.loop = !bottomPlayerAudio.loop;
   updateBottomPlayer();
-  setStatus(bottomPlayerAudio.loop ? 'Repetição da sample ativada.' : 'Repetição da sample desativada.', true);
+  setStatus(bottomPlayerAudio.loop ? 'Repeti��o da sample ativada.' : 'Repeti��o da sample desativada.', true);
 });
 bottomPlayerAudio.addEventListener('play', updateBottomPlayer);
 bottomPlayerAudio.addEventListener('pause', updateBottomPlayer);
 bottomPlayerAudio.addEventListener('ended', updateBottomPlayer);
 bottomPlayerAudio.addEventListener('loadedmetadata', updateBottomPlayer);
 bottomPlayerAudio.addEventListener('timeupdate', updateBottomPlayer);
-bottomPlayerAudio.addEventListener('error', () => setDownloadStatus('Esta prévia MP3 está indisponível.'));
+bottomPlayerAudio.addEventListener('error', () => setDownloadStatus('Esta pr�via MP3 est� indispon�vel.'));
 bottomPlayerWaveform.addEventListener('click', (event) => {
   if (!Number.isFinite(bottomPlayerAudio.duration)) return;
   const bounds = bottomPlayerWaveform.getBoundingClientRect();
@@ -2637,7 +2668,7 @@ window.addEventListener('keydown', (event) => {
   if (target === bottomPlayerWaveform || target.matches('.sample-waveform')) return;
   if (event.code === 'Space') {
     event.preventDefault();
-    if (bottomPlayerAudio.paused) bottomPlayerAudio.play().catch((error) => setDownloadStatus(error.message || 'Não foi possível reproduzir esta prévia.'));
+    if (bottomPlayerAudio.paused) bottomPlayerAudio.play().catch((error) => setDownloadStatus(error.message || 'N�o foi poss�vel reproduzir esta pr�via.'));
     else bottomPlayerAudio.pause();
   } else if (event.altKey && event.key === 'ArrowLeft' && findAdjacentPlayableSample(-1) >= 0) {
     event.preventDefault();
@@ -2678,13 +2709,13 @@ cancelDownloadButton.addEventListener('click', async () => {
     if (!result.ok) {
       if (activePackDownload) activePackDownload.cancelled = false;
       cancellingDownloadIds.delete(downloadId);
-      setDownloadStatus(result.message || 'Não foi possível cancelar este download.', false, presentation);
+      setDownloadStatus(result.message || 'N�o foi poss�vel cancelar este download.', false, presentation);
       cancelDownloadButton.disabled = false;
     }
   } catch (error) {
     if (activePackDownload) activePackDownload.cancelled = false;
     cancellingDownloadIds.delete(downloadId);
-    setDownloadStatus(error.message || 'Não foi possível cancelar este download.', false, presentation);
+    setDownloadStatus(error.message || 'N�o foi poss�vel cancelar este download.', false, presentation);
     cancelDownloadButton.disabled = false;
   }
 });
@@ -2730,9 +2761,9 @@ window.wavsResolver.onAppUpdateStatus((data) => {
     appUpdateCardMode = 'offer';
     appUpdateDownloadStarted = false;
     appUpdateCardDismissed = false;
-    appUpdateTitle.textContent = 'Atualização disponível';
-    appUpdateKicker.textContent = 'ATUALIZAÇÃO';
-    appUpdateVersion.textContent = 'Versão ' + formatDisplayVersion(data.version || 'nova');
+    appUpdateTitle.textContent = 'Atualiza��o dispon�vel';
+    appUpdateKicker.textContent = 'ATUALIZA��O';
+    appUpdateVersion.textContent = 'Vers�o ' + formatDisplayVersion(data.version || 'nova');
     appUpdateNotesHeading.textContent = 'Novidades';
     appUpdateNotes.innerHTML = formatReleaseNotes(data.releaseNotes);
     appUpdateProgress.value = 0;
@@ -2750,34 +2781,34 @@ window.wavsResolver.onAppUpdateStatus((data) => {
   } else if (data.state === 'download-started') {
     appUpdateDownloadStarted = true;
     appUpdateProgressWrap.classList.remove('hidden');
-    appUpdateMessage.textContent = 'Baixando a atualização em segundo plano.';
+    appUpdateMessage.textContent = 'Baixando a atualiza��o em segundo plano.';
     appUpdateLaterButton.textContent = 'Ocultar';
     appUpdateNowButton.disabled = true;
-    appUpdateNowButton.textContent = 'Baixando…';
+    appUpdateNowButton.textContent = 'Baixando.';
   } else if (data.state === 'progress') {
     const percent = Math.max(0, Math.min(100, Number(data.percent) || 0));
     appUpdateProgressWrap.classList.remove('hidden');
     appUpdateProgress.value = percent;
     appUpdateMark.style.setProperty('--update-fill', `${percent}%`);
-    appUpdateMessage.textContent = 'Baixando a atualização · ' + Math.round(percent) + '%';
+    appUpdateMessage.textContent = 'Baixando a atualiza��o � ' + Math.round(percent) + '%';
     appUpdateLaterButton.textContent = 'Ocultar';
     appUpdateNowButton.disabled = true;
-    appUpdateNowButton.textContent = 'Baixando…';
+    appUpdateNowButton.textContent = 'Baixando.';
   } else if (data.state === 'downloaded') {
     appUpdateMark.style.setProperty('--update-fill', '100%');
     appUpdateProgress.value = 100;
-    appUpdateMessage.textContent = 'Download concluído. Reiniciando para aplicar a atualização…';
+    appUpdateMessage.textContent = 'Download conclu�do. Reiniciando para aplicar a atualiza��o.';
     appUpdateNowButton.disabled = true;
-    appUpdateNowButton.textContent = 'Reiniciando…';
+    appUpdateNowButton.textContent = 'Reiniciando.';
     appUpdateLaterButton.disabled = true;
     appUpdateLaterButton.classList.add('hidden');
   } else if (data.state === 'applied') {
     appUpdateCardMode = 'whats-new';
     appUpdateCardDismissed = false;
-    appUpdateTitle.textContent = 'Atualização concluída';
+    appUpdateTitle.textContent = 'Atualiza��o conclu�da';
     appUpdateKicker.textContent = 'NOVIDADES';
-    appUpdateVersion.textContent = 'Versão ' + formatDisplayVersion(data.version || 'atual');
-    appUpdateNotesHeading.textContent = 'O que há de novo';
+    appUpdateVersion.textContent = 'Vers�o ' + formatDisplayVersion(data.version || 'atual');
+    appUpdateNotesHeading.textContent = 'O que h� de novo';
     appUpdateNotes.innerHTML = formatReleaseNotes(data.releaseNotes);
     appUpdateProgressWrap.classList.add('hidden');
     appUpdateLaterButton.classList.add('hidden');
@@ -2789,16 +2820,16 @@ window.wavsResolver.onAppUpdateStatus((data) => {
   } else if (data.state === 'error') {
     if (!appUpdateOverlay.classList.contains('hidden') && !appUpdateCardDismissed) {
       appUpdateDownloadStarted = false;
-      appUpdateMessage.textContent = 'Não consegui baixar a atualização. Você pode tentar novamente.';
+      appUpdateMessage.textContent = 'N�o consegui baixar a atualiza��o. Voc� pode tentar novamente.';
       appUpdateLaterButton.disabled = false;
       appUpdateLaterButton.textContent = 'Mais tarde';
       appUpdateNowButton.disabled = false;
       appUpdateNowButton.textContent = 'Tentar novamente';
     } else {
-      setDownloadStatus('Não foi possível verificar atualizações. Confira sua conexão e tente novamente mais tarde.', false, { kind: 'update' });
+      setDownloadStatus('N�o foi poss�vel verificar atualiza��es. Confira sua conex�o e tente novamente mais tarde.', false, { kind: 'update' });
     }
   } else if (data.state === 'manual') {
-    setDownloadStatus('Esta versão portátil precisa ser atualizada manualmente.', false, { kind: 'update' });
+    setDownloadStatus('Esta vers�o port�til precisa ser atualizada manualmente.', false, { kind: 'update' });
   }
 });
 
@@ -2817,15 +2848,15 @@ appUpdateNowButton.addEventListener('click', async () => {
   }
   if (appUpdateNowButton.disabled || appUpdateDownloadStarted) return;
   appUpdateNowButton.disabled = true;
-  appUpdateNowButton.textContent = 'Iniciando…';
+  appUpdateNowButton.textContent = 'Iniciando.';
   appUpdateProgressWrap.classList.remove('hidden');
-  appUpdateMessage.textContent = 'Preparando o download da atualização.';
+  appUpdateMessage.textContent = 'Preparando o download da atualiza��o.';
   try {
     const result = await window.wavsResolver.downloadAppUpdate();
-    if (!result?.ok) throw new Error(result?.message || 'Não foi possível iniciar o download.');
+    if (!result?.ok) throw new Error(result?.message || 'N�o foi poss�vel iniciar o download.');
   } catch (error) {
     appUpdateDownloadStarted = false;
-    appUpdateMessage.textContent = error.message || 'Não foi possível iniciar o download.';
+    appUpdateMessage.textContent = error.message || 'N�o foi poss�vel iniciar o download.';
     appUpdateNowButton.disabled = false;
     appUpdateNowButton.textContent = 'Tentar novamente';
   }
@@ -2836,12 +2867,12 @@ document.addEventListener('keydown', (event) => {
 window.wavsResolver.getAppVersion().then((version) => {
   appVersionLabel.textContent = `v${formatDisplayVersion(version)}`;
 }).catch(() => {
-  appVersionLabel.textContent = 'Versão indisponível';
+  appVersionLabel.textContent = 'Vers�o indispon�vel';
 });
 updateSampleDownloadDirectory().catch((error) => {
-  sampleDestinationPath.textContent = 'Pasta indisponível';
+  sampleDestinationPath.textContent = 'Pasta indispon�vel';
   sampleDestinationPath.setAttribute('aria-busy', 'false');
-  setStatus(error.message || 'Não foi possível carregar a pasta das samples.');
+  setStatus(error.message || 'N�o foi poss�vel carregar a pasta das samples.');
 });
 window.wavsResolver.getFavoritePacks().then((packs) => {
   favoritePacks = Array.isArray(packs) ? packs.filter((pack) => pack && typeof pack.id === 'string' && pack.title) : [];
@@ -2849,9 +2880,10 @@ window.wavsResolver.getFavoritePacks().then((packs) => {
   updateCatalogNavigation();
   updateCatalogGenreOptions();
   renderCatalog();
-}).catch((error) => setStatus(error.message || 'Não foi possível carregar os packs salvos.'));
+}).catch((error) => setStatus(error.message || 'N�o foi poss�vel carregar os packs salvos.'));
 loadNewPacks();
 loadDiscoveryPacks('all', 'Todos os packs');
+
 
 
 
