@@ -15,7 +15,7 @@ on:
         default: |
           ## Novidades
           - Rolagem mais estável e fluida na home e nos packs.
-          - Reprodução de áudio mais leve, acompanhando a taxa de atualização da tela.
+          - Menos efeitos gráficos pesados e áudio sincronizado à tela.
 
 permissions:
   contents: write
