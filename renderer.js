@@ -2871,4 +2871,3 @@ loadDiscoveryPacks('all', 'Todos os packs');
 
 
 
-\n
