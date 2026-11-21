@@ -421,7 +421,7 @@ function formatReleaseNotes(markdown) {
     .replace(/<\/(?:li|p|h[1-6]|div|section)>/gi, '\n')
     .replace(/<[^>]*>/g, '')
     .replace(/(#{1,3}\s+[^\n]+?)(?=-\s+)/g, '$1\n')
-    .replace(/\.\s+-\s+/g, '.\n- ')
+    .replace(/([.!?])\s*-\s+/g, '$1\n- ')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
   const lines = source.split('\n');
