@@ -129,6 +129,7 @@ let catalogPageError = false;
 let currentSamplePage = 0;
 let filteredSamples = [];
 let catalogRefreshInFlight = false;
+let catalogRenderPending = false;
 let lastCatalogRefreshAt = 0;
 const catalogRefreshInterval = 60_000;
 const startupPackSnapshotKey = 'wavsresolver.startup-pack-snapshot.v1';
@@ -467,9 +468,12 @@ function sampleDetails(sample) {
 }
 function plainDescription(value) {
   return String(value || 'Pack publicado no WAVS.')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]*>/g, '')
-    .replace(/&nbsp;/gi, ' ');
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/(?:p|div|li|h[1-6])\s*>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/[\r\n\t\s]+/g, ' ')
+    .trim();
 }
 
 function catalogCoverUrl(pack) {
@@ -967,6 +971,7 @@ function renderHomeHighlights() {
 }
 
 function renderCatalog() {
+  catalogRenderPending = false;
   syncCustomSelect(catalogPeriodSelect);
   syncCustomSelect(catalogSortSelect);
   stopPackHoverPreview();
@@ -1330,7 +1335,10 @@ async function loadNewPacks({ quiet = false } = {}) {
     catalogTotal = Number(result.total) || catalogPacks.length;
     catalogPageError = false;
     updateCatalogGenreOptions();
-    renderCatalog();
+    if (addedCount > 0) {
+      if (canShowCatalogRefreshStatus() && appShell.scrollTop <= 2) renderCatalog();
+      else catalogRenderPending = true;
+    }
     const updatedAt = new Date();
     if (canShowCatalogRefreshStatus()) {
       catalogStatus.textContent = `${filteredCatalogPacks.length} de ${catalogPacks.length} packs · atualizado às ${updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${addedCount ? ` · ${addedCount} novo${addedCount === 1 ? '' : 's'}` : ''}`;
@@ -1635,13 +1643,13 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
     renderPack(result);
     panel.setAttribute('aria-busy', 'false');
     setStatus('');
-    // Start pack views at the page's top so the folder chooser and load status
-    // remain visible above the pack, matching the intended opening layout.
-    if (scrollToPack) {
+    // Open newly selected packs at the top instead of inheriting the home
+    // catalog's scroll offset. History restoration keeps its saved position.
+    if (scrollToPack || updateHistory) {
       const restoreY = !updateHistory && history.state?.wavsResolverPackView
         ? Math.max(0, Number(history.state.wavsResolverScrollY) || 0)
         : 0;
-      appShell.scrollTo({ top: restoreY, behavior: 'smooth' });
+      appShell.scrollTop = restoreY;
     }
   } catch (error) {
     if (requestVersion !== packRequestVersion) return;
@@ -1683,12 +1691,17 @@ function drawWaveform(canvas, peaks, progress = 0) {
   const clampedProgress = progress < 0 ? -1 : Math.min(1, Math.max(0, progress));
   const progressPixel = clampedProgress < 0 ? -1 : Math.floor(width * clampedProgress);
   const hoverState = canvas.matches(':hover');
-  const renderKey = `${width}x${height}:${progressPixel}:${hoverState}`;
-  if (canvas._waveformPeaks === peaks && canvas._waveformRenderKey === renderKey) return;
-  canvas._waveformPeaks = peaks;
-  canvas._waveformRenderKey = renderKey;
+  const layerKey = `${width}x${height}`;
+  const sameBase = canvas._waveformPeaks === peaks
+    && canvas._waveformLayerKey === layerKey
+    && canvas._waveformHoverState === hoverState;
+  if (sameBase && canvas._waveformProgressPixel === progressPixel) return;
   if (!peaks?.length) {
     context.clearRect(0, 0, width, height);
+    canvas._waveformPeaks = peaks;
+    canvas._waveformLayerKey = layerKey;
+    canvas._waveformHoverState = hoverState;
+    canvas._waveformProgressPixel = progressPixel;
     return;
   }
   let normalized = normalizedWaveformCache.get(peaks);
@@ -1712,7 +1725,6 @@ function drawWaveform(canvas, peaks, progress = 0) {
     layersBySize = new Map();
     waveformLayerCache.set(peaks, layersBySize);
   }
-  const layerKey = `${width}x${height}`;
   let layers = layersBySize.get(layerKey);
   if (!layers) {
     const center = height / 2;
@@ -1753,14 +1765,20 @@ function drawWaveform(canvas, peaks, progress = 0) {
     layers = { idle, active };
     layersBySize.set(layerKey, layers);
   }
-  context.clearRect(0, 0, width, height);
-  context.drawImage(layers.idle, 0, 0);
-  if (progress >= 0) {
+  const previousProgressPixel = sameBase ? canvas._waveformProgressPixel : -1;
+  const needsFullRedraw = !sameBase || progressPixel < previousProgressPixel;
+  if (needsFullRedraw) {
+    context.clearRect(0, 0, width, height);
+    context.drawImage(layers.idle, 0, 0);
+  }
+  const activeStart = needsFullRedraw ? 0 : Math.max(0, previousProgressPixel);
+  const activeEnd = Math.max(0, progressPixel);
+  if (progressPixel >= 0 && activeEnd > activeStart) {
     context.save();
     context.beginPath();
-    context.rect(0, 0, width * Math.min(1, Math.max(0, progress)), height);
+    context.rect(activeStart, 0, activeEnd - activeStart, height);
     context.clip();
-    const glowActiveSegment = hoverState && clampedProgress > 0;
+    const glowActiveSegment = hoverState;
     if (glowActiveSegment) {
       context.shadowColor = 'rgba(255,255,255,.9)';
       context.shadowBlur = 8 * scale;
@@ -1771,6 +1789,10 @@ function drawWaveform(canvas, peaks, progress = 0) {
     context.drawImage(layers.active, 0, 0);
     context.restore();
   }
+  canvas._waveformPeaks = peaks;
+  canvas._waveformLayerKey = layerKey;
+  canvas._waveformHoverState = hoverState;
+  canvas._waveformProgressPixel = progressPixel;
 }
 
 function getWaveformPeaks(url) {
@@ -2482,33 +2504,28 @@ favoritesNavigationButton.addEventListener('click', () => setCatalogView('favori
 homeNavigationButton.addEventListener('click', navigateHome);
 recentPreviousButton.addEventListener('click', () => recentList.scrollBy({ left: -recentList.clientWidth * 0.82, behavior: 'smooth' }));
 recentNextButton.addEventListener('click', () => recentList.scrollBy({ left: recentList.clientWidth * 0.82, behavior: 'smooth' }));
-let pageWheelTarget = null;
-let pageWheelFrame = 0;
-function enqueuePageWheelScroll(delta) {
-  if (!pageWheelFrame) pageWheelTarget = appShell.scrollTop;
-  pageWheelTarget = Math.max(0, Math.min(appShell.scrollHeight - appShell.clientHeight, pageWheelTarget + delta));
-  if (pageWheelFrame) return;
-  const animate = () => {
-    const difference = pageWheelTarget - appShell.scrollTop;
-    if (Math.abs(difference) < 0.7) {
-      appShell.scrollTop = pageWheelTarget;
-      pageWheelFrame = 0;
-      pageWheelTarget = null;
-      return;
-    }
-    appShell.scrollTop += difference * 0.24;
-    pageWheelFrame = requestAnimationFrame(animate);
-  };
-  pageWheelFrame = requestAnimationFrame(animate);
-}
 document.addEventListener('wheel', (event) => {
   if (!event.deltaY || event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
   const target = event.target instanceof Element ? event.target : null;
-  if (!target || target.closest('#app-update-overlay:not(.hidden)') || appShell.contains(target)) return;
+  if (!target || target.closest('#app-update-overlay:not(.hidden)')) return;
+  const delta = event.deltaMode === 1
+    ? event.deltaY * 16
+    : event.deltaMode === 2
+      ? event.deltaY * appShell.clientHeight
+      : event.deltaY;
+  if (target.closest('.recent-list, .recent-genres')) {
+    event.preventDefault();
+    appShell.scrollTop += delta;
+    return;
+  }
+  if (appShell.contains(target)) return;
   if (target.closest('#bottom-player input[type="range"]')) return;
   event.preventDefault();
-  enqueuePageWheelScroll(event.deltaY);
-}, { passive: false });
+  appShell.scrollTop += delta;
+}, { passive: false, capture: true });
+appShell.addEventListener('scroll', () => {
+  if (catalogRenderPending && appShell.scrollTop <= 2 && canShowCatalogRefreshStatus()) renderCatalog();
+}, { passive: true });
 catalogMoreButton.addEventListener('click', () => {
   if (globalSearchMode && globalSearchPage < globalSearchLastPage) {
     searchWavsPacks(catalogSearchInput.value.trim(), globalSearchPage + 1, true);
