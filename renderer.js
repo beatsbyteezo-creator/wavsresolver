@@ -2482,11 +2482,6 @@ favoritesNavigationButton.addEventListener('click', () => setCatalogView('favori
 homeNavigationButton.addEventListener('click', navigateHome);
 recentPreviousButton.addEventListener('click', () => recentList.scrollBy({ left: -recentList.clientWidth * 0.82, behavior: 'smooth' }));
 recentNextButton.addEventListener('click', () => recentList.scrollBy({ left: recentList.clientWidth * 0.82, behavior: 'smooth' }));
-recentList.addEventListener('wheel', (event) => {
-  if (event.ctrlKey || event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-  event.preventDefault();
-  enqueuePageWheelScroll(event.deltaY);
-}, { passive: false });
 let pageWheelTarget = null;
 let pageWheelFrame = 0;
 function enqueuePageWheelScroll(delta) {
@@ -2509,9 +2504,8 @@ function enqueuePageWheelScroll(delta) {
 document.addEventListener('wheel', (event) => {
   if (!event.deltaY || event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
   const target = event.target instanceof Element ? event.target : null;
-  if (!target || target.closest('#app-update-overlay:not(.hidden)')) return;
+  if (!target || target.closest('#app-update-overlay:not(.hidden)') || appShell.contains(target)) return;
   if (target.closest('#bottom-player input[type="range"]')) return;
-  if (appShell.contains(target) && !target.closest('#pack-panel')) return;
   event.preventDefault();
   enqueuePageWheelScroll(event.deltaY);
 }, { passive: false });

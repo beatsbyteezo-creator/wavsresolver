@@ -7,15 +7,15 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.1"
+        default: "1.2.2"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - Rolagem suave e navegação corrigida.
-          - Correções visuais no aviso de atualização.
+          - Correção de saltos na rolagem sobre os packs.
+          - Navegação mais estável dentro dos packs.
 
 permissions:
   contents: write
