@@ -2582,14 +2582,13 @@ body[data-theme="light"] .creator-suggestion:hover, body[data-theme="light"] .cr
 .catalog-search input:focus { outline: none !important; border: 0 !important; box-shadow: none !important; }
 body[data-theme="light"] .catalog-search:focus-within { border-color: rgba(74,63,91,.24) !important; box-shadow: 0 0 0 2px rgba(74,63,91,.06) !important; }
 
-/* Pack header alignment: keep long descriptions from collapsing into chips/actions. */
+/* Restore the original two-column pack header and bottom-aligned action row. */
 body.pack-view-active .pack-head { align-items: start; }
 body.pack-view-active .pack-info {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto auto auto auto;
-  align-content: start;
-  align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
   min-width: 0;
   padding: 4px 0;
 }
@@ -2613,7 +2612,7 @@ body.pack-view-active .pack-description {
   scrollbar-width: thin;
 }
 body.pack-view-active .chips { align-self: start; margin: 0 0 10px; }
-body.pack-view-active .pack-actions { align-self: start; margin: 0; }
+body.pack-view-active .pack-actions { align-self: start; margin: auto 0 0; }
 body.pack-view-active .pack-actions > * { flex: 0 0 auto; }
 @media (max-width: 760px) {
   body.pack-view-active .pack-info { padding: 0; }
@@ -2755,17 +2754,15 @@ body.pack-view-active .sample-waveform:hover {
   filter: none;
 }
 
-/* Home motion: reveal pack cards as they enter the viewport, once per shelf. */
+/* Short, compositor-friendly reveals follow the display's normal frame cadence. */
 .catalog-card.home-reveal-pending {
   opacity: 0;
-  transform: translate3d(0, 14px, 0) scale(.99);
-  transition: opacity 420ms cubic-bezier(.2,.72,.24,1), transform 420ms cubic-bezier(.2,.72,.24,1);
-  will-change: opacity, transform;
+  transform: translate3d(0, 8px, 0);
+  transition: opacity 220ms ease-out, transform 220ms ease-out;
 }
 .catalog-card.home-reveal-pending.home-revealed {
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  will-change: auto;
+  transform: translate3d(0, 0, 0);
 }
 .recent-list {
   scroll-behavior: smooth;
@@ -2813,7 +2810,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; }
   min-height: 0;
   grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
-  transition: height .32s cubic-bezier(.22, 1, .36, 1);
+  transition: none;
 }
 .app-sidebar { height: 100%; min-height: 0; }
 .shell {
@@ -2852,11 +2849,23 @@ body.player-active .app-layout { height: calc(100dvh - var(--player-dock-reserve
   letter-spacing: .04em;
 }
 
-/* Pack details use the page's single scroll surface; avoid a nested scroll trap. */
+/* Restore the compact pack header: keep long copy inside its own small viewport. */
 body.pack-view-active .pack-description {
-  max-height: none !important;
+  display: -webkit-box;
+  max-height: 92px !important;
   height: auto !important;
-  overflow: visible !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  padding-right: 0;
+}
+@media (max-width: 760px) {
+  body.pack-view-active .pack-description { max-height: 56px !important; -webkit-line-clamp: 3; }
 }
 body.pack-view-active .pack-panel { min-height: 0; }
 .app-layout { min-height: 0; }
@@ -2887,15 +2896,34 @@ body.pack-view-active .pack-panel { min-height: 0; }
   .download-update-icon-fill, .app-update-mark-fill { transition: none; }
 }
 
-/* Pack detail view: use one scrollable region while keeping the path bar fixed. */
-body.pack-view-active .shell { overflow-y: hidden; }
-body.pack-view-active .pack-panel {
-  flex: 1 1 0;
+/* Keep one native scroll surface for the pack view: the main content column. */
+body.pack-view-active .shell {
+  height: 100%;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  overscroll-behavior-y: contain;
+}
+body.pack-view-active .pack-panel {
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow: visible;
+  margin: 72px auto 10px;
   scrollbar-width: none;
+  border-color: rgba(255,255,255,.025);
+  box-shadow: none;
+}
+@media (max-width: 800px) {
+  body.pack-view-active .pack-panel { margin-top: 40px; }
+}
+body.pack-view-active .sample {
+  border-color: rgba(255,255,255,.018);
+  box-shadow: none;
+}
+body.pack-view-active .sample:hover { border-color: rgba(255,255,255,.055); }
+body.pack-view-active .sample-play,
+body.pack-view-active .sample-download {
+  border-color: rgba(255,255,255,.045);
+  box-shadow: none;
 }
 body.pack-view-active .pack-panel::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .app-update-overlay {
