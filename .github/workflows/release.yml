@@ -14,8 +14,8 @@ on:
         type: string
         default: |
           ## Novidades
-          - Correção de saltos na rolagem sobre os packs.
-          - Navegação mais estável dentro dos packs.
+          - Rolagem mais estável e fluida na home e nos packs.
+          - Reprodução de áudio mais leve, acompanhando a taxa de atualização da tela.
 
 permissions:
   contents: write
