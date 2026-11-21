@@ -409,7 +409,21 @@ function formatDisplayVersion(version) {
 }
 
 function formatReleaseNotes(markdown) {
-  const source = String(markdown || '').replace(/\r/g, '').replace(/\uFFFD/g, '');
+  let source = String(markdown || '').replace(/\uFFFD/g, '').replace(/\r/g, '');
+  // Some release providers flatten newlines or return escaped HTML. Normalize
+  // those forms before parsing so tags never appear literally in the update card.
+  source = source
+    .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&nbsp;/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<li\b[^>]*>/gi, '\n- ')
+    .replace(/<h[1-6]\b[^>]*>/gi, '\n## ')
+    .replace(/<\/(?:li|p|h[1-6]|div|section)>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/(#{1,3}\s+[^\n]+?)(?=-\s+)/g, '$1\n')
+    .replace(/\.\s+-\s+/g, '.\n- ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
   const lines = source.split('\n');
   const output = [];
   let paragraph = [];
@@ -432,7 +446,7 @@ function formatReleaseNotes(markdown) {
     const bullet = line.match(/^[-*]\s+(.+)$/);
     if (!line) { flushParagraph(); flushBullets(); }
     else if (heading) { flushParagraph(); flushBullets(); output.push(`<h4>${inline(heading[1])}</h4>`); }
-    else if (bullet && bulletCount < 4) { flushParagraph(); bullets.push(bullet[1]); bulletCount += 1; }
+    else if (bullet && bulletCount < 3) { flushParagraph(); bullets.push(bullet[1]); bulletCount += 1; }
     else if (bullet) { flushParagraph(); }
     else { flushBullets(); paragraph.push(line); }
   }
@@ -2471,15 +2485,35 @@ recentNextButton.addEventListener('click', () => recentList.scrollBy({ left: rec
 recentList.addEventListener('wheel', (event) => {
   if (event.ctrlKey || event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
   event.preventDefault();
-  appShell.scrollBy({ top: event.deltaY, behavior: 'auto' });
+  enqueuePageWheelScroll(event.deltaY);
 }, { passive: false });
+let pageWheelTarget = null;
+let pageWheelFrame = 0;
+function enqueuePageWheelScroll(delta) {
+  if (!pageWheelFrame) pageWheelTarget = appShell.scrollTop;
+  pageWheelTarget = Math.max(0, Math.min(appShell.scrollHeight - appShell.clientHeight, pageWheelTarget + delta));
+  if (pageWheelFrame) return;
+  const animate = () => {
+    const difference = pageWheelTarget - appShell.scrollTop;
+    if (Math.abs(difference) < 0.7) {
+      appShell.scrollTop = pageWheelTarget;
+      pageWheelFrame = 0;
+      pageWheelTarget = null;
+      return;
+    }
+    appShell.scrollTop += difference * 0.24;
+    pageWheelFrame = requestAnimationFrame(animate);
+  };
+  pageWheelFrame = requestAnimationFrame(animate);
+}
 document.addEventListener('wheel', (event) => {
   if (!event.deltaY || event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
   const target = event.target instanceof Element ? event.target : null;
-  if (!target || appShell.contains(target) || target.closest('#app-update-overlay:not(.hidden)')) return;
+  if (!target || target.closest('#app-update-overlay:not(.hidden)')) return;
   if (target.closest('#bottom-player input[type="range"]')) return;
+  if (appShell.contains(target) && !target.closest('#pack-panel')) return;
   event.preventDefault();
-  appShell.scrollBy({ top: event.deltaY, behavior: 'auto' });
+  enqueuePageWheelScroll(event.deltaY);
 }, { passive: false });
 catalogMoreButton.addEventListener('click', () => {
   if (globalSearchMode && globalSearchPage < globalSearchLastPage) {
@@ -2837,3 +2871,4 @@ loadDiscoveryPacks('all', 'Todos os packs');
 
 
 
+\n

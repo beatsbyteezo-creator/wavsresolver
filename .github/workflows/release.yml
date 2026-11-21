@@ -7,15 +7,15 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.0"
+        default: "1.2.1"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - Correção de bugs visuais e de navegação.
-          - Upgrade no visual e na fluidez do app.
+          - Rolagem suave e navegação corrigida.
+          - Correções visuais no aviso de atualização.
 
 permissions:
   contents: write
@@ -58,7 +58,9 @@ jobs:
             if ($LASTEXITCODE -ne 0) { throw "Nao foi possivel limpar o rascunho anterior." }
           }
           $displayVersion = $appVersion -replace '\.0$', ''
-          gh release create "v$appVersion" --draft --title "WavsResolver $displayVersion" --notes $releaseNotes
+          $notesPath = Join-Path $env:RUNNER_TEMP 'wavs-release-notes.md'
+          [System.IO.File]::WriteAllText($notesPath, $releaseNotes, [System.Text.UTF8Encoding]::new($false))
+          gh release create "v$appVersion" --draft --title "WavsResolver $displayVersion" --notes-file $notesPath
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_NOTES: ${{ inputs.release_notes }}
@@ -84,3 +86,4 @@ jobs:
           gh release edit "v$appVersion" --draft=false
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+\n

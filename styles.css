@@ -2851,6 +2851,41 @@ body.player-active .app-layout { height: calc(100dvh - var(--player-dock-reserve
   font-weight: 650;
   letter-spacing: .04em;
 }
+
+/* Pack details use the page's single scroll surface; avoid a nested scroll trap. */
+body.pack-view-active .pack-description {
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+body.pack-view-active .pack-panel { min-height: 0; }
+.app-layout { min-height: 0; }
+.shell { min-height: 0; overscroll-behavior-y: contain; }
+
+/* Render the update progress mark as text so Chromium never shows a broken ICO image. */
+.download-update-icon-base, .download-update-icon-fill,
+.app-update-mark-base, .app-update-mark-fill {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: Inter, "Segoe UI", sans-serif;
+  font-weight: 900;
+  line-height: 1;
+}
+.download-update-icon-base, .app-update-mark-base { color: rgba(235, 235, 241, .5); }
+.download-update-icon-fill, .app-update-mark-fill {
+  clip-path: inset(calc(100% - var(--update-fill, 0%)) 0 0 0);
+  color: #fff;
+  text-shadow: 0 0 7px rgba(255,255,255,.5);
+  transition: clip-path .18s linear;
+}
+.download-update-icon-base, .download-update-icon-fill { font-size: 31px; }
+.app-update-mark-base, .app-update-mark-fill { font-size: 26px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .download-update-icon-fill, .app-update-mark-fill { transition: none; }
+}
 .app-update-overlay {
   position: fixed;
   z-index: 3000;
@@ -2936,3 +2971,4 @@ body[data-theme="light"] .sidebar-version { color: rgba(64,60,72,.55); }
 }
 
 
+\n
