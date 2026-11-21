@@ -36,12 +36,12 @@ function getAppIconPath() {
 
 function getAppIcon() {
   const icon = nativeImage.createFromPath(getAppIconPath());
-  if (icon.isEmpty()) throw new Error(`N�o foi poss�vel carregar o �cone do app: ${getAppIconPath()}`);
+  if (icon.isEmpty()) throw new Error(`Não foi possível carregar o ícone do app: ${getAppIconPath()}`);
   return icon;
 }
 
 function registerDownloadRequest(url, request) {
-  if (requestedDownloads.has(url)) throw new Error('Este download j� est� sendo iniciado.');
+  if (requestedDownloads.has(url)) throw new Error('Este download já está sendo iniciado.');
   const record = { ...request };
   record.timeout = setTimeout(() => {
     if (requestedDownloads.get(url) !== record) return;
@@ -49,8 +49,8 @@ function registerDownloadRequest(url, request) {
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('download-finished', {
         downloadId: url,
-        filename: record.filename || 'pr�via WAVS',
-        state: 'n�o iniciado'
+        filename: record.filename || 'prévia WAVS',
+        state: 'não iniciado'
       });
     }
   }, 30_000);
@@ -69,7 +69,7 @@ function persistAppSettings(updates) {
   try {
     fs.writeFileSync(settingsPath, JSON.stringify(nextSettings, null, 2), 'utf8');
   } catch (error) {
-    return { ok: false, message: `N�o foi poss�vel salvar suas prefer�ncias: ${error.message}` };
+    return { ok: false, message: `Não foi possível salvar suas preferências: ${error.message}` };
   }
   appSettings = nextSettings;
   return { ok: true };
@@ -79,9 +79,9 @@ function openExternalUrl(rawUrl) {
   try {
     const url = new URL(rawUrl);
     if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
-    shell.openExternal(url.href).catch((error) => console.error('N�o foi poss�vel abrir o link externo:', error));
+    shell.openExternal(url.href).catch((error) => console.error('Não foi possível abrir o link externo:', error));
   } catch (error) {
-    console.error('O app bloqueou um link externo inv�lido:', error);
+    console.error('O app bloqueou um link externo inválido:', error);
   }
 }
 
@@ -102,13 +102,13 @@ function registerWindowsNotificationShortcut() {
   const shortcutPath = path.join(shortcutDirectory, 'WavsResolver.lnk');
   fs.mkdirSync(iconDirectory, { recursive: true });
   const notificationIcon = getAppIcon().resize({ width: 44, height: 44 });
-  if (notificationIcon.isEmpty()) throw new Error('N�o foi poss�vel gerar o �cone das notifica��es do WavsResolver.');
+  if (notificationIcon.isEmpty()) throw new Error('Não foi possível gerar o ícone das notificações do WavsResolver.');
   fs.writeFileSync(notificationIconPath, notificationIcon.toPNG());
   const appUserModelIdKey = `HKCU\\Software\\Classes\\AppUserModelId\\${windowsAppUserModelId}`;
   execFileSync('reg.exe', ['add', appUserModelIdKey, '/v', 'DisplayName', '/t', 'REG_SZ', '/d', 'WavsResolver', '/f'], { windowsHide: true, stdio: 'ignore' });
   execFileSync('reg.exe', ['add', appUserModelIdKey, '/v', 'IconUri', '/t', 'REG_SZ', '/d', notificationIconPath, '/f'], { windowsHide: true, stdio: 'ignore' });
   if (app.isPackaged && (!fs.existsSync(target) || isTemporaryPath(target))) {
-    throw new Error('O app foi iniciado da pasta tempor�ria; abra o execut�vel port�til original para registrar um atalho permanente.');
+    throw new Error('O app foi iniciado da pasta temporária; abra o executável portátil original para registrar um atalho permanente.');
   }
   fs.mkdirSync(shortcutDirectory, { recursive: true });
   const shortcutCreated = shell.writeShortcutLink(shortcutPath, 'create', {
@@ -120,7 +120,7 @@ function registerWindowsNotificationShortcut() {
     iconIndex: 0,
     appUserModelId: windowsAppUserModelId
   });
-  if (!shortcutCreated) throw new Error('O Windows n�o conseguiu registrar o atalho de notifica��es do WavsResolver.');
+  if (!shortcutCreated) throw new Error('O Windows não conseguiu registrar o atalho de notificações do WavsResolver.');
 }
 
 function getPackId(value) {
@@ -215,11 +215,11 @@ function pathReservationKey(filePath) {
 
 function startSamplePreviewDownload(rawUrl, rawTitle, rawTempo, rawAuthor, rawFolderName = '') {
   let url;
-  try { url = new URL(rawUrl); } catch { throw new Error('O link da pr�via MP3 � inv�lido.'); }
+  try { url = new URL(rawUrl); } catch { throw new Error('O link da prévia MP3 é inválido.'); }
   if (url.protocol !== 'https:' || url.hostname !== 'cdn.wavs.com' || !url.pathname.toLowerCase().endsWith('.mp3')) {
-    throw new Error('A pr�via n�o � um arquivo MP3 v�lido do WAVS.');
+    throw new Error('A prévia não é um arquivo MP3 válido do WAVS.');
   }
-  if (!mainWindow || mainWindow.isDestroyed()) throw new Error('A janela do app n�o est� aberta.');
+  if (!mainWindow || mainWindow.isDestroyed()) throw new Error('A janela do app não está aberta.');
   url.hash = '';
   let targetDirectory = sampleDownloadDirectory;
   if (rawFolderName) {
@@ -238,7 +238,7 @@ function startSamplePreviewDownload(rawUrl, rawTitle, rawTempo, rawAuthor, rawFo
   try {
     fs.accessSync(targetDirectory, fs.constants.W_OK);
   } catch {
-    throw new Error('A pasta escolhida n�o est� acess�vel para grava��o. Escolha outra pasta para as samples.');
+    throw new Error('A pasta escolhida não está acessível para gravação. Escolha outra pasta para as samples.');
   }
   const filename = [rawTitle || 'wavs-sample', rawTempo ? `${rawTempo} BPM` : '', rawAuthor || 'autor desconhecido']
     .map((part) => String(part).trim())
@@ -330,7 +330,7 @@ function reportAppUpdateError(error) {
   if (!appUpdateDownloadStarted) appUpdateAvailable = false;
   appUpdateDownloadStarted = false;
   appUpdateDownloaded = false;
-  console.warn('Falha ao buscar ou baixar uma atualiza��o:', error.message || error);
+  console.warn('Falha ao buscar ou baixar uma atualização:', error.message || error);
   sendAppUpdateStatus({ state: 'error' });
 }
 
@@ -349,9 +349,22 @@ function startAppUpdater() {
     appUpdateAvailable = true;
     appUpdateDownloadStarted = false;
     appUpdateDownloaded = false;
-    const releaseNotes = Array.isArray(info.releaseNotes)
+    let releaseNotes = Array.isArray(info.releaseNotes)
       ? info.releaseNotes.map((item) => item?.note).filter(Boolean).join('\n\n')
       : typeof info.releaseNotes === 'string' ? info.releaseNotes : '';
+    const notesContainEncodingErrors = releaseNotes.includes('\uFFFD');
+    releaseNotes = releaseNotes
+      .replace(/<br\s*\/?\s*>/gi, '\n')
+      .replace(/<li\b[^>]*>/gi, '\n- ')
+      .replace(/<h[1-6]\b[^>]*>/gi, '\n## ')
+      .replace(/<\/(?:li|p|h[1-6]|div|section)>/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+      .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&nbsp;/gi, ' ')
+      .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    if (notesContainEncodingErrors || !releaseNotes) {
+      releaseNotes = '## Novidades\n- Correção de bugs visuais e de navegação.\n- Upgrade no visual e na fluidez do app.';
+    }
     appUpdateReleaseInfo = { version: info.version, releaseNotes: releaseNotes.slice(0, 12000) };
     sendAppUpdateStatus({ state: 'available', ...appUpdateReleaseInfo });
   });
@@ -371,10 +384,11 @@ function startAppUpdater() {
     try {
       fs.writeFileSync(appUpdateNoticePath, JSON.stringify(notice), 'utf8');
     } catch (error) {
-      console.error('N�o foi poss�vel salvar as novidades da atualiza��o:', error);
+      console.error('Não foi possível salvar as novidades da atualização:', error);
     }
     sendAppUpdateStatus({ state: 'downloaded', version: notice.version });
-    const installTimer = setTimeout(() => autoUpdater.quitAndInstall(false, true), 1100);
+    // Apply the NSIS update silently, then relaunch WavsResolver.
+    const installTimer = setTimeout(() => autoUpdater.quitAndInstall(true, true), 1100);
     installTimer.unref?.();
   });
   autoUpdater.on('error', reportAppUpdateError);
@@ -400,13 +414,13 @@ function startAppUpdater() {
       fs.unlinkSync(appUpdateNoticePath);
     }
   } catch (error) {
-    if (error.code !== 'ENOENT') console.error('N�o foi poss�vel carregar as novidades da atualiza��o:', error);
+    if (error.code !== 'ENOENT') console.error('Não foi possível carregar as novidades da atualização:', error);
   }
 }
 
 ipcMain.handle('get-app-version', () => app.getVersion());
 ipcMain.handle('download-app-update', async () => {
-  if (!appUpdateAvailable) return { ok: false, message: 'N�o h� uma atualiza��o dispon�vel agora.' };
+  if (!appUpdateAvailable) return { ok: false, message: 'Não há uma atualização disponível agora.' };
   if (appUpdateDownloaded) return { ok: true, ready: true };
   if (appUpdateDownloadStarted) return { ok: true, downloading: true };
   appUpdateDownloadStarted = true;
@@ -416,9 +430,9 @@ ipcMain.handle('download-app-update', async () => {
     return { ok: true, downloading: true };
   } catch (error) {
     appUpdateDownloadStarted = false;
-    console.warn('N�o foi poss�vel iniciar o download da atualiza��o:', error.message || error);
+    console.warn('Não foi possível iniciar o download da atualização:', error.message || error);
     sendAppUpdateStatus({ state: 'error' });
-    return { ok: false, message: error.message || 'N�o foi poss�vel iniciar o download.' };
+    return { ok: false, message: error.message || 'Não foi possível iniciar o download.' };
   }
 });
 ipcMain.handle('acknowledge-app-update', () => {
@@ -439,10 +453,10 @@ ipcMain.handle('load-pack', async (_event, link) => {
     ]);
     const pack = packResponse.pack;
     const samples = audioResponse.samples?.data;
-    if (!pack || !Array.isArray(samples)) return { ok: false, message: 'N�o encontrei esse pack no cat�logo do WAVS.' };
+    if (!pack || !Array.isArray(samples)) return { ok: false, message: 'Não encontrei esse pack no catálogo do WAVS.' };
     return { ok: true, packId, pack, samples, sampleCount: audioResponse.samples.total ?? samples.length, sampleTypes: audioResponse.sample_type_counts ?? {} };
   } catch (error) {
-    return { ok: false, message: error.message || 'N�o consegui carregar este pack agora.' };
+    return { ok: false, message: error.message || 'Não consegui carregar este pack agora.' };
   }
 });
 
@@ -451,7 +465,7 @@ ipcMain.handle('load-new-packs', async () => {
     const response = await apiRequest('/api/home/whats-new?genre_id=');
     const pageData = response.packs ?? {};
     const packs = pageData.data;
-    if (!Array.isArray(packs)) return { ok: false, message: 'O WAVS n�o retornou uma lista de packs.' };
+    if (!Array.isArray(packs)) return { ok: false, message: 'O WAVS não retornou uma lista de packs.' };
     const currentPage = Number(pageData.current_page ?? pageData.currentPage) || 1;
     const total = Number(pageData.total) || packs.length;
     const perPage = Number(pageData.per_page ?? pageData.perPage) || 0;
@@ -459,17 +473,17 @@ ipcMain.handle('load-new-packs', async () => {
     const lastPage = reportedLastPage > 0 ? reportedLastPage : perPage > 0 ? Math.ceil(total / perPage) : packs.length ? currentPage + 1 : currentPage;
     return { ok: true, packs, page: currentPage, lastPage, total };
   } catch (error) {
-    return { ok: false, message: error.message || 'N�o consegui carregar os packs novos do WAVS.' };
+    return { ok: false, message: error.message || 'Não consegui carregar os packs novos do WAVS.' };
   }
 });
 
 ipcMain.handle('load-pack-preview', async (_event, rawPackId) => {
   const packId = String(rawPackId ?? '').trim();
-  if (!/^\d+$/.test(packId)) return { ok: false, message: 'O pack selecionado n�o tem um identificador v�lido.' };
+  if (!/^\d+$/.test(packId)) return { ok: false, message: 'O pack selecionado não tem um identificador válido.' };
   try {
     const response = await apiRequest(`/api/pack/${packId}/audio?perpage=all`);
     const samples = response.samples?.data;
-    if (!Array.isArray(samples)) return { ok: false, message: 'O WAVS n�o retornou pr�vias v�lidas para este pack.' };
+    if (!Array.isArray(samples)) return { ok: false, message: 'O WAVS não retornou prévias válidas para este pack.' };
     const preview = samples.find((sample) => {
       if (typeof sample?.mp3 !== 'string') return false;
       try {
@@ -479,18 +493,18 @@ ipcMain.handle('load-pack-preview', async (_event, rawPackId) => {
         return false;
       }
     });
-    if (!preview) return { ok: false, message: 'Este pack n�o tem uma pr�via MP3 dispon�vel.' };
+    if (!preview) return { ok: false, message: 'Este pack não tem uma prévia MP3 disponível.' };
     return { ok: true, url: preview.mp3 };
   } catch (error) {
-    return { ok: false, message: error.message || 'N�o consegui carregar a pr�via deste pack.' };
+    return { ok: false, message: error.message || 'Não consegui carregar a prévia deste pack.' };
   }
 });
 
 ipcMain.handle('load-genre-packs', async (_event, rawGenreId, rawPage) => {
   const genreId = String(rawGenreId ?? '').trim();
   const page = Number(rawPage);
-  if (genreId !== 'all' && !/^\d+$/.test(genreId)) return { ok: false, message: 'O g�nero selecionado n�o tem um identificador v�lido.' };
-  if (!Number.isSafeInteger(page) || page < 1 || page > 1000) return { ok: false, message: 'P�gina de g�nero inv�lida.' };
+  if (genreId !== 'all' && !/^\d+$/.test(genreId)) return { ok: false, message: 'O gênero selecionado não tem um identificador válido.' };
+  if (!Number.isSafeInteger(page) || page < 1 || page > 1000) return { ok: false, message: 'Página de gênero inválida.' };
   try {
     const response = genreId === 'all'
       ? await apiRequest(`/api/packs/search-by-title?${new URLSearchParams({ page: String(page), search_title: '' })}`)
@@ -499,8 +513,8 @@ ipcMain.handle('load-genre-packs', async (_event, rawGenreId, rawPage) => {
     const pagination = pageData.meta ?? pageData.pagination ?? response.meta ?? response.pagination ?? {};
     const packs = Array.isArray(pageData.data) ? pageData.data : Array.isArray(pageData) ? pageData : null;
     if (!Array.isArray(packs)) return { ok: false, message: genreId === 'all'
-      ? 'O WAVS n�o retornou uma lista v�lida do cat�logo completo.'
-      : 'O WAVS n�o retornou uma lista v�lida para este g�nero.' };
+      ? 'O WAVS não retornou uma lista válida do catálogo completo.'
+      : 'O WAVS não retornou uma lista válida para este gênero.' };
     const currentPage = Number(pageData.current_page ?? pageData.currentPage ?? pagination.current_page ?? pagination.currentPage ?? response.current_page) || page;
     const total = Number(pageData.total ?? pagination.total ?? response.total) || 0;
     const perPage = Number(pageData.per_page ?? pageData.perPage ?? pagination.per_page ?? pagination.perPage ?? response.per_page ?? response.perPage) || 0;
@@ -515,8 +529,8 @@ ipcMain.handle('load-genre-packs', async (_event, rawGenreId, rawPage) => {
     };
   } catch (error) {
     return { ok: false, message: error.message || (genreId === 'all'
-      ? 'N�o consegui carregar o cat�logo completo do WAVS.'
-      : 'N�o consegui carregar os packs deste g�nero no WAVS.') };
+      ? 'Não consegui carregar o catálogo completo do WAVS.'
+      : 'Não consegui carregar os packs deste gênero no WAVS.') };
   }
 });
 
@@ -527,7 +541,7 @@ ipcMain.handle('load-creator-profile', async (_event, rawId, rawUsername, rawDis
   const page = Number(rawPage ?? 1);
   if ((id && !/^\d+$/.test(id)) || (username && !/^[\p{L}\p{N}._-]+$/u.test(username))
     || (!username && display.length < 2) || !Number.isSafeInteger(page) || page < 1 || page > 1000) {
-    return { ok: false, message: 'O criador selecionado n�o tem um identificador v�lido.' };
+    return { ok: false, message: 'O criador selecionado não tem um identificador válido.' };
   }
   try {
     let profileUsername = username;
@@ -536,28 +550,28 @@ ipcMain.handle('load-creator-profile', async (_event, rawId, rawUsername, rawDis
       const params = new URLSearchParams({ search: query, page: '1', perpage: '30', order: 'relevancy' });
       const searchResponse = await apiRequest(`/api/producers?${params}`);
       const sellers = searchResponse.sellers?.data;
-      if (!Array.isArray(sellers)) return { ok: false, message: 'O WAVS n�o retornou resultados de criador v�lidos.' };
+      if (!Array.isArray(sellers)) return { ok: false, message: 'O WAVS não retornou resultados de criador válidos.' };
       const normalizedQuery = query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
       const match = sellers.find((seller) => (id && String(seller.id) === id) || [
         seller.display,
         seller.username
       ].some((name) => String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase() === normalizedQuery));
-      if (!match?.username) return { ok: false, message: 'N�o encontrei esse criador no WAVS.' };
-      if (id && String(match.id) !== id) return { ok: false, message: 'O perfil deste criador n�o est� dispon�vel no WAVS.' };
+      if (!match?.username) return { ok: false, message: 'Não encontrei esse criador no WAVS.' };
+      if (id && String(match.id) !== id) return { ok: false, message: 'O perfil deste criador não está disponível no WAVS.' };
       profileUsername = match.username;
     }
     const profileResponse = await apiRequest(`/api/producer/${encodeURIComponent(profileUsername)}?redirect=true`);
     const creator = profileResponse.seller;
     if (!creator || (id && String(creator.id) !== id)) {
-      return { ok: false, message: 'O perfil deste criador n�o est� dispon�vel no WAVS.' };
+      return { ok: false, message: 'O perfil deste criador não está disponível no WAVS.' };
     }
     if (!/^\d+$/.test(String(creator.id ?? ''))) {
-      return { ok: false, message: 'O perfil deste criador n�o tem um identificador v�lido para carregar os packs.' };
+      return { ok: false, message: 'O perfil deste criador não tem um identificador válido para carregar os packs.' };
     }
     const params = new URLSearchParams({ page: String(page), perpage: '30' });
     const packsResponse = await apiRequest(`/api/producer/${encodeURIComponent(creator.id)}/packs?${params}`);
     if (!Array.isArray(packsResponse.data)) {
-      return { ok: false, message: 'O perfil foi carregado, mas o WAVS n�o retornou os packs deste criador.' };
+      return { ok: false, message: 'O perfil foi carregado, mas o WAVS não retornou os packs deste criador.' };
     }
     const creatorSummary = {
       id: creator.id,
@@ -575,7 +589,7 @@ ipcMain.handle('load-creator-profile', async (_event, rawId, rawUsername, rawDis
       lastPage: Number(packsResponse.last_page || packsResponse.lastPage) || Math.max(1, Math.ceil((Number(packsResponse.total) || packs.length) / 30))
     };
   } catch (error) {
-    return { ok: false, message: error.message || 'N�o consegui carregar o perfil deste criador.' };
+    return { ok: false, message: error.message || 'Não consegui carregar o perfil deste criador.' };
   }
 });
 
@@ -589,7 +603,7 @@ ipcMain.handle('get-app-preferences', () => ({
 ipcMain.handle('save-app-preference', (_event, rawKey, rawValue) => {
   const key = String(rawKey ?? '');
   if (key === 'theme') {
-    if (rawValue !== 'dark' && rawValue !== 'light') return { ok: false, message: 'O tema selecionado � inv�lido.' };
+    if (rawValue !== 'dark' && rawValue !== 'light') return { ok: false, message: 'O tema selecionado é inválido.' };
     return persistAppSettings({ theme: rawValue });
   }
   if (key === 'playerVolume') {
@@ -597,11 +611,11 @@ ipcMain.handle('save-app-preference', (_event, rawKey, rawValue) => {
     if (!Number.isFinite(value) || value < 0 || value > 1) return { ok: false, message: 'O volume precisa estar entre 0 e 1.' };
     return persistAppSettings({ playerVolume: value });
   }
-  return { ok: false, message: 'Esta prefer�ncia n�o pode ser alterada.' };
+  return { ok: false, message: 'Esta preferência não pode ser alterada.' };
 });
 ipcMain.handle('toggle-favorite-pack', (_event, rawPack) => {
   const pack = normalizeFavoritePack(rawPack);
-  if (!pack) return { ok: false, message: 'N�o foi poss�vel salvar este pack: os dados recebidos s�o inv�lidos.' };
+  if (!pack) return { ok: false, message: 'Não foi possível salvar este pack: os dados recebidos são inválidos.' };
   const favorites = appSettings.favoritePacks || [];
   const alreadySaved = favorites.some((favorite) => favorite.id === pack.id);
   const nextFavorites = alreadySaved
@@ -617,13 +631,13 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
   const page = Number(rawPage);
   const creatorId = String(rawCreator?.id ?? '').trim();
   if (query.length < 2) return { ok: false, message: 'Digite pelo menos 2 caracteres para buscar packs.' };
-  if (!Number.isSafeInteger(page) || page < 1 || page > 1000) return { ok: false, message: 'P�gina de busca inv�lida.' };
-  if (creatorId && !/^\d+$/.test(creatorId)) return { ok: false, message: 'Criador de busca inv�lido.' };
+  if (!Number.isSafeInteger(page) || page < 1 || page > 1000) return { ok: false, message: 'Página de busca inválida.' };
+  if (creatorId && !/^\d+$/.test(creatorId)) return { ok: false, message: 'Criador de busca inválido.' };
   try {
     const loadCreatorPacks = async (creator, requestedPage) => {
       const params = new URLSearchParams({ page: String(requestedPage), perpage: '30' });
       const creatorResponse = await apiRequest(`/api/producer/${encodeURIComponent(creator.id)}/packs?${params}`);
-      if (!Array.isArray(creatorResponse.data)) return { ok: false, message: `O WAVS encontrou o criador ${creator.display}, mas n�o retornou a lista de packs.` };
+      if (!Array.isArray(creatorResponse.data)) return { ok: false, message: `O WAVS encontrou o criador ${creator.display}, mas não retornou a lista de packs.` };
       const total = Number(creatorResponse.total) || creatorResponse.data.length;
       const lastPage = Number(creatorResponse.last_page || creatorResponse.lastPage) || Math.max(1, Math.ceil(total / 30));
       return {
@@ -639,7 +653,7 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
 
     const loadGenrePacks = async (requestedPage) => {
       const genreResponse = await apiRequest('/api/genres');
-      if (!Array.isArray(genreResponse.data)) throw new Error('O WAVS n�o retornou uma lista v�lida de g�neros.');
+      if (!Array.isArray(genreResponse.data)) throw new Error('O WAVS não retornou uma lista válida de gêneros.');
       const genres = genreResponse.data
         .filter((genre) => matchesSearchQuery(query, [genre.title]))
         .slice(0, 3);
@@ -648,7 +662,7 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
         const params = new URLSearchParams({ genre_id: String(genre.id), page: String(requestedPage) });
         const response = await apiRequest(`/api/home/whats-new?${params}`);
         const pageData = response.packs;
-        if (!Array.isArray(pageData?.data)) throw new Error(`O WAVS n�o retornou packs de ${genre.title}.`);
+        if (!Array.isArray(pageData?.data)) throw new Error(`O WAVS não retornou packs de ${genre.title}.`);
         return {
           packs: pageData.data,
           lastPage: Number(pageData.last_page) || requestedPage,
@@ -671,7 +685,7 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
       });
       const response = await apiRequest(`/api/sounds?${params}`);
       const pageData = response.samples;
-      if (!Array.isArray(pageData?.data)) throw new Error('O WAVS n�o retornou samples v�lidas para esta busca.');
+      if (!Array.isArray(pageData?.data)) throw new Error('O WAVS não retornou samples válidas para esta busca.');
       const samples = pageData.data.flatMap((sample) => {
         let mp3 = typeof sample.mp3 === 'string' ? sample.mp3 : '';
         try {
@@ -740,7 +754,7 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
       }
       const producers = producerResponse?.sellers?.data;
       if (producerResponse && !Array.isArray(producers)) {
-        warnings.push('O WAVS n�o retornou resultados de criadores v�lidos.');
+        warnings.push('O WAVS não retornou resultados de criadores válidos.');
       }
       const normalizedQuery = normalizeSearchText(producerQuery);
       creators = (producers || [])
@@ -782,13 +796,13 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
     ]);
     const titleResponse = titleResult.status === 'fulfilled' ? titleResult.value : null;
     if (titleResponse && !Array.isArray(titleResponse.data)) {
-      warnings.push('O WAVS n�o retornou resultados de packs v�lidos.');
+      warnings.push('O WAVS não retornou resultados de packs válidos.');
     } else if (titleResult.status === 'rejected') {
       warnings.push(`A busca por nome de pack falhou: ${titleResult.reason.message || 'erro desconhecido'}.`);
     }
     const genreData = genreResult.status === 'fulfilled' ? genreResult.value : { packs: [], lastPage: page, total: 0 };
     if (genreResult.status === 'rejected') {
-      warnings.push(`A busca por g�nero falhou: ${genreResult.reason.message || 'erro desconhecido'}.`);
+      warnings.push(`A busca por gênero falhou: ${genreResult.reason.message || 'erro desconhecido'}.`);
     }
     const creatorData = creatorResult.status === 'fulfilled' ? creatorResult.value : null;
     if (creatorResult.status === 'rejected') {
@@ -818,7 +832,7 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
     }
     const packs = [...packsById.values()];
     if (!titleResponse && !genreData.packs.length && !creatorData?.packs.length && !sampleSearchData) {
-      return { ok: false, message: warnings.join(' ') || 'N�o consegui pesquisar no WAVS.' };
+      return { ok: false, message: warnings.join(' ') || 'Não consegui pesquisar no WAVS.' };
     }
     const samplesById = new Map();
     for (const sample of sampleSearchData?.samples || []) {
@@ -844,7 +858,7 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
       warning: warnings.join(' ')
     };
   } catch (error) {
-    return { ok: false, message: error.message || 'N�o consegui pesquisar os packs no WAVS.' };
+    return { ok: false, message: error.message || 'Não consegui pesquisar os packs no WAVS.' };
   }
 });
 
@@ -853,18 +867,18 @@ ipcMain.handle('download-sample-preview', async (_event, url, title, tempo, auth
     const download = startSamplePreviewDownload(url, title, tempo, author, folderName);
     return { status: 'started', ...download };
   } catch (error) {
-    return { status: 'error', message: error.message || 'N�o consegui iniciar o download da pr�via.' };
+    return { status: 'error', message: error.message || 'Não consegui iniciar o download da prévia.' };
   }
 });
 ipcMain.handle('cancel-sample-preview-download', (_event, rawDownloadId) => {
   let url;
-  try { url = new URL(rawDownloadId); } catch { return { ok: false, message: 'O identificador do download � inv�lido.' }; }
+  try { url = new URL(rawDownloadId); } catch { return { ok: false, message: 'O identificador do download é inválido.' }; }
   if (url.protocol !== 'https:' || url.hostname !== 'cdn.wavs.com' || !url.pathname.toLowerCase().endsWith('.mp3')) {
-    return { ok: false, message: 'O download solicitado n�o � uma pr�via MP3 v�lida do WAVS.' };
+    return { ok: false, message: 'O download solicitado não é uma prévia MP3 válida do WAVS.' };
   }
   const request = requestedDownloads.get(url.href);
   const item = activeDownloads.get(url.href);
-  if (!request && !item) return { ok: false, message: 'Este download n�o est� mais ativo.' };
+  if (!request && !item) return { ok: false, message: 'Este download não está mais ativo.' };
   if (request) request.cancelled = true;
   if (item) item.cancel();
   return { ok: true };
@@ -889,7 +903,7 @@ app.whenReady().then(() => {
   try {
     registerWindowsNotificationShortcut();
   } catch (error) {
-    console.error('N�o foi poss�vel registrar a identidade das notifica��es do WavsResolver:', error);
+    console.error('Não foi possível registrar a identidade das notificações do WavsResolver:', error);
   }
   wavsSession = session.fromPartition('persist:wavs-personal');
   downloadDirectory = app.getPath('downloads');
@@ -907,7 +921,7 @@ app.whenReady().then(() => {
       sampleDownloadDirectory = savedDirectory;
     }
   } catch (error) {
-    if (error.code !== 'ENOENT') console.error('N�o foi poss�vel carregar a pasta de samples salva:', error);
+    if (error.code !== 'ENOENT') console.error('Não foi possível carregar a pasta de samples salva:', error);
   }
   fs.mkdirSync(downloadDirectory, { recursive: true });
   wavsSession.on('will-download', (_event, item) => {
@@ -931,12 +945,12 @@ app.whenReady().then(() => {
   });
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'WavsResolver', submenu: [
-      { label: 'In�cio', click: () => mainWindow?.loadFile(path.join(__dirname, 'index.html')) },
+      { label: 'Início', click: () => mainWindow?.loadFile(path.join(__dirname, 'index.html')) },
       { label: 'Explorar packs novos', click: () => shell.openExternal('https://wavs.com/explore') },
       { label: 'Abrir pasta de downloads', click: () => shell.openPath(downloadDirectory) },
       { type: 'separator' }, { role: 'quit', label: 'Sair' }
     ] },
-    { label: 'Navega��o', submenu: [ { role: 'reload', label: 'Recarregar app' }, { type: 'separator' }, { role: 'toggleDevTools', label: 'Ferramentas do desenvolvedor' } ] }
+    { label: 'Navegação', submenu: [ { role: 'reload', label: 'Recarregar app' }, { type: 'separator' }, { role: 'toggleDevTools', label: 'Ferramentas do desenvolvedor' } ] }
   ]));
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });

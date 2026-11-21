@@ -3,16 +3,19 @@ name: Publicar atualizacao do WavsResolver
 on:
   workflow_dispatch:
     inputs:
+      release_version:
+        description: "Versão desta publicação"
+        required: true
+        type: string
+        default: "1.2.0"
       release_notes:
-        description: "Notas que aparecer�o no card de atualiza��o"
+        description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
-          ## Novidades do WavsResolver
-          - Atualiza��o com escolha entre instalar agora ou mais tarde, progresso do download, rein�cio autom�tico e resumo das mudan�as ap�s reabrir.
-          - �cone do app ganha cor conforme o download da atualiza��o avan�a.
-          - Waveforms redesenham apenas quando o progresso visual muda, reduzindo trabalho durante a reprodu��o.
-          - Rolagem vertical da p�gina n�o fica presa sobre o carrossel de packs recentes.
+          ## Novidades
+          - Correção de bugs visuais e de navegação.
+          - Upgrade no visual e na fluidez do app.
 
 permissions:
   contents: write
@@ -33,16 +36,15 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Calcular a proxima versao
+      - name: Definir a versao desta release
         run: |
-          $latest = gh release list --limit 1 --exclude-drafts --json tagName | ConvertFrom-Json
-          if (-not $latest -or -not $latest[0].tagName) { throw "Nao foi possivel ler a ultima release publicada." }
-          $baseVersion = $latest[0].tagName -replace '^v', ''
-          npm version $baseVersion --no-git-tag-version
-          npm version patch --no-git-tag-version
+          $releaseVersion = $env:RELEASE_VERSION.Trim() -replace '^v', ''
+          if ($releaseVersion -notmatch '^\d+\.\d+\.\d+$') { throw "Informe a versao no formato semver, por exemplo 1.2.0." }
+          npm version $releaseVersion --no-git-tag-version
           Write-Output "Versao desta compilacao: $(node -p "require('./package.json').version")"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
 
       - name: Criar release antes do upload
         run: |
@@ -55,7 +57,8 @@ jobs:
             gh release delete "v$appVersion" --yes
             if ($LASTEXITCODE -ne 0) { throw "Nao foi possivel limpar o rascunho anterior." }
           }
-          gh release create "v$appVersion" --draft --title "$appVersion" --notes $releaseNotes
+          $displayVersion = $appVersion -replace '\.0$', ''
+          gh release create "v$appVersion" --draft --title "WavsResolver $displayVersion" --notes $releaseNotes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_NOTES: ${{ inputs.release_notes }}

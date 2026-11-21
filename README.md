@@ -1,12 +1,14 @@
 # WavsResolver
 
+**Versão do projeto: 1.2.0 (exibida no app como 1.2).**
+
 Aplicativo Windows para explorar packs públicos do WAVS, ouvir previews e baixar arquivos MP3.
 
 ## Instalar
 
 Baixe o instalador Windows x64 na página de [Releases](https://github.com/beatsbyteezo-creator/wavsresolver/releases/latest) e execute-o. A instalação é por usuário e cria atalhos no Menu Iniciar e na área de trabalho. O app precisa de internet para acessar o catálogo WAVS.
 
-Quem usa a versão portátil precisa instalar o instalador uma vez. Depois disso, o app verifica atualizações ao abrir, baixa as novas versões automaticamente e as instala ao fechar o app.
+O app verifica atualizações ao abrir. Quando encontra uma versão nova, mostra as mudanças e deixa escolher entre atualizar agora ou mais tarde. O download acontece dentro do app; ao terminar, ele reinicia para aplicar a atualização.
 
 O instalador ainda não tem assinatura digital; o Windows pode exibir um aviso na primeira execução.
 
@@ -23,7 +25,7 @@ Catálogo, metadados e previews dependem da disponibilidade e das regras atuais 
 
 ## Atualizações
 
-O GitHub Actions gera um instalador e uma release quando o código do app é atualizado na branch principal. A versão é incrementada automaticamente. Também é possível iniciar o workflow pela aba **Actions** do repositório.
+As publicações são iniciadas manualmente pela aba **Actions**. Informe a versão desejada e as notas resumidas da release. O instalador e os arquivos do atualizador são compilados e publicados no GitHub Releases. A versão semver `1.2.0` aparece no app como `1.2`.
 
 ## Desenvolvimento
 

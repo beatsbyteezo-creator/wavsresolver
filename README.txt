@@ -1,23 +1,23 @@
 WAVSRESOLVER - WINDOWS 64 BITS
+VERSAO DO PROJETO: 1.2.0 (MOSTRADA NO APP COMO 1.2)
 
 INSTALACAO
-1. Baixe WavsResolver-<versao>-Windows-x64.exe na aba Releases.
+1. Baixe o instalador Windows x64 na aba Releases do GitHub.
 2. Execute o instalador. Ele instala o app para sua conta e cria atalhos.
 3. O app precisa de conexao com a internet para acessar o catalogo WAVS.
 4. O instalador nao e assinado digitalmente; o Windows pode mostrar um aviso.
-5. Quem usa a versao portatil 1.0.3 precisa instalar esta primeira versao uma vez.
-   As atualizacoes seguintes sao baixadas automaticamente e instaladas ao fechar o app.
-
-COMO USAR
-- Explore os packs recentes, filtre por genero ou pesquise packs e criadores.
-- Abra um pack para ouvir previews, buscar samples e baixar uma sample ou o pack inteiro.
-- Use o player fixo para pausar, navegar entre previews, ajustar volume e repetir.
-- Packs salvos e preferencias ficam neste computador.
-- Use "Alterar pasta" para escolher onde salvar os arquivos MP3.
 
 ATUALIZACOES
-O app verifica novas versoes ao iniciar. Quando uma atualizacao estiver pronta, ela sera
-instalada automaticamente ao fechar o WavsResolver.
+O app verifica novas versoes ao iniciar e mostra um resumo das mudancas.
+Escolha Atualizar agora para baixar dentro do app ou Mais tarde para adiar.
+Ao terminar, o app reinicia e aplica a atualizacao em segundo plano.
+
+COMO USAR
+- Explore packs recentes, filtre por genero ou pesquise packs e criadores.
+- Abra um pack para ouvir previews e baixar samples ou o pack inteiro.
+- Use o player para controlar reproducao, volume, navegar e repetir.
+- Packs salvos e preferencias ficam neste computador.
+- Use Alterar pasta para escolher onde salvar os arquivos MP3.
 
 OBSERVACOES
 - O catalogo e os previews dependem da disponibilidade e das regras do WAVS.
