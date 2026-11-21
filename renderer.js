@@ -900,26 +900,19 @@ async function toggleFavoritePack(packId) {
 }
 
 function observeHomePackCards(container) {
-  if (!container) return;
+  if (!container || window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
   const cards = container.querySelectorAll('.catalog-card[data-pack-id]');
   if (!cards.length) return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
-
   if (!homeRevealObserver) {
     homeRevealObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const card = entry.target;
-        card.classList.toggle('home-revealed', entry.isIntersecting);
-      });
-    }, { threshold: 0.08, rootMargin: '0px 0px -28px 0px' });
+      entries.forEach((entry) => entry.target.classList.toggle('home-revealed', entry.isIntersecting));
+    }, { root: appShell, threshold: 0.08, rootMargin: '0px 0px -28px 0px' });
   }
-
   cards.forEach((card) => {
     card.classList.add('home-reveal-pending');
     homeRevealObserver.observe(card);
   });
 }
-
 function renderHomeHighlights() {
   const showHighlights = catalogView === 'explore' && !globalSearchMode && !creatorProfile && !creatorProfileLoading && !creatorProfileError;
   const hasPacks = showHighlights && catalogPacks.length > 0;
@@ -1014,7 +1007,7 @@ function renderCatalog() {
   if (globalSearchLoading || genreFilterLoading || catalogPageLoading) {
     catalogMoreButton.innerHTML = loadingIndicatorMarkup('Carregando…', 'loading-indicator-compact');
   } else {
-    catalogMoreButton.textContent = catalogPageError && !discoveryView ? 'Tentar novamente' : globalSearchMode || genreView ? 'Carregar mais resultados' : 'Mostrar mais packs';
+    catalogMoreButton.textContent = catalogPageError && !discoveryView ? 'Tentar novamente' : globalSearchMode || genreView ? 'Carregar mais resultados' : 'Ver mais';
   }
   catalogEmpty.textContent = globalSearchMode
     ? globalSearchCreators.length
@@ -2504,25 +2497,19 @@ favoritesNavigationButton.addEventListener('click', () => setCatalogView('favori
 homeNavigationButton.addEventListener('click', navigateHome);
 recentPreviousButton.addEventListener('click', () => recentList.scrollBy({ left: -recentList.clientWidth * 0.82, behavior: 'smooth' }));
 recentNextButton.addEventListener('click', () => recentList.scrollBy({ left: recentList.clientWidth * 0.82, behavior: 'smooth' }));
-document.addEventListener('wheel', (event) => {
-  if (!event.deltaY || event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-  const target = event.target instanceof Element ? event.target : null;
-  if (!target || target.closest('#app-update-overlay:not(.hidden)')) return;
+function forwardOutsideWheel(event) {
+  if (!event.deltaY || event.ctrlKey || event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+  if (event.target.closest?.('#bottom-player input[type="range"]')) return;
   const delta = event.deltaMode === 1
     ? event.deltaY * 16
     : event.deltaMode === 2
       ? event.deltaY * appShell.clientHeight
       : event.deltaY;
-  if (target.closest('.recent-list, .recent-genres')) {
-    event.preventDefault();
-    appShell.scrollTop += delta;
-    return;
-  }
-  if (appShell.contains(target)) return;
-  if (target.closest('#bottom-player input[type="range"]')) return;
   event.preventDefault();
   appShell.scrollTop += delta;
-}, { passive: false, capture: true });
+}
+document.querySelector('.app-sidebar').addEventListener('wheel', forwardOutsideWheel, { passive: false });
+bottomPlayer.addEventListener('wheel', forwardOutsideWheel, { passive: false });
 appShell.addEventListener('scroll', () => {
   if (catalogRenderPending && appShell.scrollTop <= 2 && canShowCatalogRefreshStatus()) renderCatalog();
 }, { passive: true });
@@ -2546,27 +2533,6 @@ catalogMoreButton.addEventListener('click', () => {
   }
   if (!genreFilterId && catalogPage < catalogLastPage) loadCatalogPage(catalogPage + 1);
 });
-const allPacksLoadObserver = new IntersectionObserver((entries) => {
-  if (!entries.some((entry) => entry.isIntersecting)
-    || catalogView === 'favorites'
-    || globalSearchMode
-    || genreFilterLoading
-    || catalogPageLoading) return;
-  if (genreFilterId === 'all') {
-    if (!genreFilterError && genreFilterPage < genreFilterLastPage) {
-      loadDiscoveryPacks('all', genreFilterName || 'Todos os packs', genreFilterPage + 1, true);
-    }
-    return;
-  }
-  if (genreFilterId || catalogPageError) return;
-  if (visiblePackCount < filteredCatalogPacks.length) {
-    visiblePackCount += 12;
-    renderCatalog();
-  } else if (catalogPage < catalogLastPage) {
-    loadCatalogPage(catalogPage + 1);
-  }
-}, { rootMargin: '800px 0px' });
-allPacksLoadObserver.observe(catalogMoreButton);
 window.setInterval(() => {
   if (document.visibilityState === 'visible') loadNewPacks({ quiet: true });
 }, catalogRefreshInterval);
