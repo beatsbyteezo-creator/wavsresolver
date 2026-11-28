@@ -298,11 +298,16 @@ function normalizeFavoritePack(pack) {
   };
 }
 
+function getTitleBarStyle(theme) {
+  return { color: '#00000000', symbolColor: theme === 'light' ? '#252032' : '#f5f0ff', height: 32 };
+}
+
 function createWindow() {
   const appIcon = getAppIcon();
   mainWindow = new BrowserWindow({
-    width: 1600, height: 1000, minWidth: 640, minHeight: 560, backgroundColor: '#000000', title: 'WavsResolver', autoHideMenuBar: true,
+    width: 1600, height: 1000, minWidth: 640, minHeight: 560, backgroundColor: appSettings.theme === 'light' ? '#f2eff6' : '#181622', title: 'WavsResolver', autoHideMenuBar: true,
     icon: getAppWindowIconPath(),
+    ...(process.platform === 'win32' ? { titleBarStyle: 'hidden', titleBarOverlay: getTitleBarStyle(appSettings.theme) } : {}),
     webPreferences: { partition: 'persist:wavs-personal', preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true }
   });
   mainWindow.setIcon(appIcon);
@@ -641,7 +646,11 @@ ipcMain.handle('save-app-preference', (_event, rawKey, rawValue) => {
   const key = String(rawKey ?? '');
   if (key === 'theme') {
     if (rawValue !== 'dark' && rawValue !== 'light') return { ok: false, message: 'O tema selecionado é inválido.' };
-    return persistAppSettings({ theme: rawValue });
+    const result = persistAppSettings({ theme: rawValue });
+    if (process.platform === 'win32' && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setTitleBarOverlay(getTitleBarStyle(rawValue));
+    }
+    return result;
   }
   if (key === 'playerVolume') {
     const value = Number(rawValue);

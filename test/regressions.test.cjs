@@ -51,6 +51,10 @@ test('sair do pack restaura o botão mesmo com uma requisição pendente', async
   const ctx = vm.createContext({
     packRequestVersion: 0,
     activePackPreviewId: null,
+    sampleWaveformObserver: undefined,
+    appShell: {},
+    findPackById: () => null,
+    URL,
     currentPack: null,
     stopBottomPlayer() {},
     stopPackHoverPreview() {},
@@ -65,6 +69,7 @@ test('sair do pack restaura o botão mesmo com uma requisição pendente', async
     panel: {
       classList,
       replaceChildren() {},
+      querySelector: () => null,
       setAttribute: (name, value) => { attributes[name] = value; }
     },
     document: { body: { classList } },
@@ -72,7 +77,7 @@ test('sair do pack restaura o botão mesmo com uma requisição pendente', async
     window: { wavsResolver: { loadPack } }
   });
   const close = section('renderer.js', 'function clearPackView()', 'function resetCatalogFilters()');
-  const open = section('renderer.js', 'async function openPack(', 'function openPackById(');
+  const open = section('renderer.js', 'function renderPendingPack(', 'function openPackById(');
   const pending = vm.runInContext(close + open + '\nopenPack("test")', ctx);
   assert.equal(loadButton.disabled, true);
   vm.runInContext('clearPackView()', ctx);
@@ -81,6 +86,13 @@ test('sair do pack restaura o botão mesmo com uma requisição pendente', async
   resolvePack({ ok: true });
   await pending;
   assert.equal(loadButton.disabled, false);
+
+  ctx.appShell.scrollTop = 240;
+  const failed = vm.runInContext('openPack("test")', ctx);
+  assert.equal(ctx.appShell.scrollTop, 0);
+  resolvePack({ ok: false, message: "Pack indisponível" });
+  await failed;
+  assert.equal(ctx.appShell.scrollTop, 240);
 });
 
 test('a busca mantém samples quando as respostas de título e criadores são inválidas', async () => {

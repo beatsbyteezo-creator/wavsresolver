@@ -149,8 +149,10 @@ const packReleaseDateCache = new WeakMap();
 let activeSampleIndex = -1;
 let lastWaveformSampleIndex = -1;
 let playerAnimationFrame = 0;
-let waveformPalette;
+const waveformPalettes = new Map();
 let activeWaveformTasks = 0;
+let sampleWaveformObserver;
+let hoveredPackCard;
 const maxConcurrentWaveformTasks = 2;
 const packPreviewCache = new Map();
 let packHoverRequestId = 0;
@@ -167,6 +169,11 @@ function setStatus(message, success = false) { status.textContent = message || '
 function applyTheme(theme) {
   const isLight = theme === 'light';
   document.body.dataset.theme = isLight ? 'light' : 'dark';
+  for (const canvas of document.querySelectorAll('.sample-waveform, .bottom-player-waveform')) {
+    if (!canvas.waveformPeaks?.length) continue;
+    const progress = canvas._waveformProgressPixel >= 0 ? canvas._waveformProgressPixel / canvas.width : -1;
+    drawWaveform(canvas, canvas.waveformPeaks, progress);
+  }
   themeToggleButton.innerHTML = '<span aria-hidden="true">' + (isLight ? '&#9788;' : '&#9790;') + '</span>Tema ' + (isLight ? 'escuro' : 'claro');
   themeToggleButton.setAttribute('aria-label', 'Mudar para tema ' + (isLight ? 'escuro' : 'claro'));
   themeToggleButton.setAttribute('aria-pressed', String(isLight));
@@ -707,15 +714,14 @@ async function playPackHoverPreview(card) {
 }
 function bindPackHoverPreview(card) {
   card.addEventListener('pointerenter', () => {
-    document.querySelectorAll('.catalog-card.is-hovered').forEach((otherCard) => {
-      if (otherCard !== card) otherCard.classList.remove('is-hovered', 'is-hovered-down');
-    });
-    const shellRect = document.querySelector('.shell')?.getBoundingClientRect();
-    const cardRect = card.getBoundingClientRect();
-    card.classList.toggle('is-hovered-down', Boolean(shellRect && cardRect.top < shellRect.top + 24));
+    hoveredPackCard?.classList.remove('is-hovered');
+    hoveredPackCard = card;
     card.classList.add('is-hovered');
   });
-  card.addEventListener('pointerleave', () => card.classList.remove('is-hovered', 'is-hovered-down'));
+  card.addEventListener('pointerleave', () => {
+    card.classList.remove('is-hovered');
+    if (hoveredPackCard === card) hoveredPackCard = null;
+  });
   card.querySelector('.catalog-preview-button')?.addEventListener('click', (event) => {
     event.stopPropagation();
     void playPackHoverPreview(card);
@@ -1511,6 +1517,7 @@ async function loadDiscoveryPacks(filterId, filterName, page = 1, append = false
 
 function clearPackView() {
   packRequestVersion += 1;
+  sampleWaveformObserver?.disconnect();
   loadButton.disabled = false;
   loadButton.textContent = 'Mostrar pack →';
   panel.setAttribute('aria-busy', 'false');
@@ -1669,10 +1676,28 @@ window.addEventListener('popstate', (event) => {
   requestAnimationFrame(() => appShell.scrollTo(0, Math.max(0, Number(previousView?.scrollY) || 0)));
 });
 
+function renderPendingPack(link) {
+  const knownPack = findPackById(getPackIdFromLink(link));
+  const cover = knownPack ? catalogCoverUrl(knownPack) : '';
+  const title = knownPack?.title;
+  const coverMarkup = cover
+    ? '<img class="pack-cover" src="' + escapeHtml(cover) + '" alt="">'
+    : '<div class="pack-cover pack-loading-art" aria-hidden="true"></div>';
+  const titleMarkup = title ? '<h2 class="pack-title">' + escapeHtml(title) + '</h2>' : '';
+  panel.innerHTML = '<div class="pack-navigation"><button class="back-home-button" type="button">Voltar</button></div>'
+    + '<div class="pack-head pack-loading">' + coverMarkup + '<div class="pack-info">' + titleMarkup
+    + '<div class="pack-loading-track" aria-hidden="true"></div></div></div>';
+  panel.querySelector('.back-home-button')?.addEventListener('click', () => {
+    if (history.state?.wavsResolverPackView || history.state?.wavsResolverCreatorView) navigateBack();
+    else clearPackView();
+  });
+}
+
 async function openPack(link, scrollToPack = false, updateHistory = true) {
   const keepPreview = Boolean(activePackPreviewId && getPackIdFromLink(link) === activePackPreviewId && bottomPlayerAudio.src);
   if (!keepPreview) stopPackHoverPreview();
   const requestVersion = ++packRequestVersion;
+  const previousScrollTop = appShell.scrollTop;
   const previousView = history.state?.wavsResolverPackView
     ? history.state.wavsResolverPreviousView
     : capturePreviousView();
@@ -1682,10 +1707,12 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
   loadButton.disabled = true;
   loadButton.innerHTML = loadingIndicatorMarkup('Carregando…', 'loading-indicator-compact');
   if (!keepPreview) stopBottomPlayer();
-  panel.innerHTML = '<div class="pack-loading" role="status"><div class="pack-loading-art" aria-hidden="true"></div><div class="pack-loading-copy"><span class="pack-loading-title" aria-hidden="true"></span><span class="pack-loading-line" aria-hidden="true"></span><span class="pack-loading-line" aria-hidden="true"></span><p>Carregando pack e samples…</p></div></div>';
+  sampleWaveformObserver?.disconnect();
+  renderPendingPack(link);
   panel.setAttribute('aria-busy', 'true');
   panel.classList.remove('hidden');
   document.body.classList.add('pack-view-active');
+  appShell.scrollTop = 0;
   setStatus('');
   try {
     const result = await window.wavsResolver.loadPack(link);
@@ -1694,6 +1721,7 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
       panel.classList.add('hidden');
       panel.setAttribute('aria-busy', 'false');
       document.body.classList.remove('pack-view-active');
+    appShell.scrollTop = previousScrollTop;
       setStatus(result.message);
       if (scrollToPack) catalogStatus.textContent = result.message;
       return;
@@ -1703,7 +1731,7 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
       if (history.state?.wavsResolverPackView) {
         history.replaceState(packState, '', `#pack-${result.packId}`);
       } else {
-        history.replaceState({ ...history.state, wavsResolverPreviousView: previousView, wavsResolverScrollY: appShell.scrollTop }, '');
+        history.replaceState({ ...history.state, wavsResolverPreviousView: previousView, wavsResolverScrollY: previousScrollTop }, '');
         history.pushState(packState, '', `#pack-${result.packId}`);
       }
     }
@@ -1724,6 +1752,7 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
     panel.classList.add('hidden');
     panel.setAttribute('aria-busy', 'false');
     document.body.classList.remove('pack-view-active');
+      appShell.scrollTop = previousScrollTop;
     const message = error.message || 'Não consegui carregar o pack.';
     setStatus(message);
     if (scrollToPack) catalogStatus.textContent = message;
@@ -1764,7 +1793,8 @@ function drawWaveform(canvas, peaks, progress = 0) {
   const clampedProgress = progress < 0 ? -1 : Math.min(1, Math.max(0, progress));
   const progressPixel = clampedProgress < 0 ? -1 : Math.floor(width * clampedProgress);
   const hoverState = canvas.matches(':hover');
-  const layerKey = `${width}x${height}`;
+  const theme = document.body.dataset.theme;
+  const layerKey = `${theme}:${width}x${height}`;
   const sameBase = canvas._waveformPeaks === peaks
     && canvas._waveformLayerKey === layerKey
     && canvas._waveformHoverState === hoverState;
@@ -1784,14 +1814,16 @@ function drawWaveform(canvas, peaks, progress = 0) {
     normalized = peaks.map((peak) => Math.max(0.012, peak / maxPeak));
     normalizedWaveformCache.set(peaks, normalized);
   }
+  let waveformPalette = waveformPalettes.get(theme);
   if (!waveformPalette) {
-    const rootStyle = getComputedStyle(document.documentElement);
+    const rootStyle = getComputedStyle(document.body);
     waveformPalette = {
       idle: rootStyle.getPropertyValue('--waveform-idle').trim(),
       start: rootStyle.getPropertyValue('--waveform-active-start').trim(),
       mid: rootStyle.getPropertyValue('--waveform-active-mid').trim(),
       end: rootStyle.getPropertyValue('--waveform-active-end').trim()
     };
+    waveformPalettes.set(theme, waveformPalette);
   }
   let layersBySize = waveformLayerCache.get(peaks);
   if (!layersBySize) {
@@ -1918,6 +1950,7 @@ function getWaveformPeaks(url) {
       processWaveformQueue();
     });
     waveformCache.set(url, waveform);
+    waveform.catch(() => waveformCache.delete(url));
   }
   return waveformCache.get(url);
 }
@@ -1931,6 +1964,15 @@ function processWaveformQueue() {
 }
 
 function setupSamplePlayers(samples) {
+  if ('IntersectionObserver' in window) {
+    sampleWaveformObserver ??= new IntersectionObserver((entries, observer) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        observer.unobserve(entry.target);
+        if (entry.target.isConnected) loadSampleWaveform(entry.target);
+      }
+    }, { root: appShell, rootMargin: '120px 0px' });
+  }
   for (const sample of samples) {
     const playButton = sample.querySelector('.sample-play');
     if (playButton) playButton.addEventListener('click', () => playSample(Number(playButton.dataset.sampleIndex)));
@@ -1973,22 +2015,27 @@ function setupSamplePlayers(samples) {
         bottomPlayerAudio.currentTime + (event.key === 'ArrowRight' ? 5 : -5)));
       updateBottomPlayer();
     });
-    getWaveformPeaks(waveform.dataset.url).then((peaks) => {
-      if (!waveform.isConnected) return;
-      waveform.waveformPeaks = peaks;
-      waveform.classList.remove('waveform-loading');
-      waveform.classList.add('waveform-ready');
-      const progress = Number(waveform.dataset.sampleIndex) === activeSampleIndex && Number.isFinite(bottomPlayerAudio.duration)
-        ? bottomPlayerAudio.currentTime / bottomPlayerAudio.duration
-        : -1;
-      drawWaveform(waveform, peaks, progress);
-    }).catch((error) => {
-      if (!waveform.isConnected) return;
-      waveform.classList.remove('waveform-loading');
-      waveform.classList.add('waveform-unavailable');
-      waveform.title = error.message || 'A waveform desta prévia está indisponível.';
-    });
+    if (sampleWaveformObserver) sampleWaveformObserver.observe(waveform);
+    else loadSampleWaveform(waveform);
   }
+}
+
+function loadSampleWaveform(waveform) {
+  getWaveformPeaks(waveform.dataset.url).then((peaks) => {
+    if (!waveform.isConnected) return;
+    waveform.waveformPeaks = peaks;
+    waveform.classList.remove('waveform-loading');
+    waveform.classList.add('waveform-ready');
+    const progress = Number(waveform.dataset.sampleIndex) === activeSampleIndex && Number.isFinite(bottomPlayerAudio.duration)
+      ? bottomPlayerAudio.currentTime / bottomPlayerAudio.duration
+      : -1;
+    drawWaveform(waveform, peaks, progress);
+  }).catch((error) => {
+    if (!waveform.isConnected) return;
+    waveform.classList.remove('waveform-loading');
+    waveform.classList.add('waveform-unavailable');
+    waveform.title = error.message || 'A waveform desta prévia está indisponível.';
+  });
 }
 
 function findAdjacentPlayableSample(direction) {
@@ -2179,6 +2226,7 @@ function renderSample(sample, pack, index) {
 }
 
 function renderSamplePage() {
+  sampleWaveformObserver?.disconnect();
   if (!currentPack) return;
   const start = currentSamplePage * samplePageSize;
   const end = Math.min(start + samplePageSize, filteredSamples.length);
@@ -2210,6 +2258,7 @@ function filterPackSamples() {
   const query = sampleSearchInput.value.trim().toLocaleLowerCase();
   const sampleList = panel.querySelector('.sample-list');
   currentSamplePage = 0;
+  sampleWaveformObserver?.disconnect();
   if (activeSampleIndex >= 0) stopBottomPlayer();
   sampleList.replaceChildren();
   filteredSamples = currentPack.samples.filter((sample) => {
@@ -2231,9 +2280,10 @@ function renderPack(result) {
   currentSamplePage = 0;
   const cover = coverUrl(pack);
   const creator = pack.user || {};
+  const description = escapeHtml(plainDescription(pack.description));
   const genres = (pack.genres || []).map((genre) => typeof genre === 'string' ? genre : genre?.title).filter(Boolean);
   const saved = favoritePacks.some((favorite) => String(favorite.id) === String(pack.id));
-  panel.innerHTML = `<div class="pack-navigation"><button id="back-home" class="back-home-button" type="button">← Voltar à home</button></div><div class="pack-head">${cover ? `<img class="pack-cover" src="${escapeHtml(cover)}" alt="Capa de ${escapeHtml(pack.title)}">` : '<div class="pack-cover"></div>'}<div class="pack-info"><button class="pack-creator" type="button" data-creator-id="${escapeHtml(creator.id ?? '')}" data-creator-username="${escapeHtml(creator.username ?? '')}" data-creator-display="${escapeHtml(creator.display || creator.username || 'Criador WAVS')}">${escapeHtml(creator.display || creator.username || 'Criador WAVS')}</button><h2 class="pack-title">${escapeHtml(pack.title)}</h2><p class="pack-description">${escapeHtml(plainDescription(pack.description))}</p><div class="chips">${genres.map((genre) => `<span class="chip">${escapeHtml(genre)}</span>`).join('')}<span class="chip">${escapeHtml(formatPackDate(pack))}</span>${pack.is_free ? '<span class="chip">Gratuito</span>' : ''}</div><div class="pack-actions"><span class="sample-count">${Number(result.sampleCount || result.samples.length)} samples</span><button class="back-home-button pack-favorite${saved ? ' is-saved' : ''}" type="button" aria-pressed="${saved}">${saved ? '♥ Pack salvo' : '♡ Salvar pack'}</button></div></div></div><div class="samples-head"><span>Samples do pack</span><span>Prévia · BPM · tom · estilo</span></div><div class="sample-toolbar"><label class="sample-search"><span aria-hidden="true">⌕</span><input id="sample-search" type="search" placeholder="Buscar por nome…" autocomplete="off" aria-label="Buscar samples por nome"></label><span id="sample-filter-status" class="sample-filter-status"></span></div><div class="sample-list"></div><nav id="samples-pagination" class="samples-pagination hidden" aria-label="Paginação das samples"><button id="samples-previous" type="button" aria-label="Página anterior">← Anterior</button><span id="samples-page-status"></span><button id="samples-next" type="button" aria-label="Próxima página">Próxima →</button></nav>`;
+  panel.innerHTML = `<div class="pack-navigation"><button id="back-home" class="back-home-button" type="button">← Voltar à home</button></div><div class="pack-head">${cover ? `<img class="pack-cover" src="${escapeHtml(cover)}" alt="Capa de ${escapeHtml(pack.title)}">` : '<div class="pack-cover"></div>'}<div class="pack-info"><button class="pack-creator" type="button" data-creator-id="${escapeHtml(creator.id ?? '')}" data-creator-username="${escapeHtml(creator.username ?? '')}" data-creator-display="${escapeHtml(creator.display || creator.username || 'Criador WAVS')}">${escapeHtml(creator.display || creator.username || 'Criador WAVS')}</button><h2 class="pack-title">${escapeHtml(pack.title)}</h2><p class="pack-description" title="${description}">${description}</p><div class="chips">${genres.map((genre) => `<span class="chip">${escapeHtml(genre)}</span>`).join('')}<span class="chip">${escapeHtml(formatPackDate(pack))}</span>${pack.is_free ? '<span class="chip">Gratuito</span>' : ''}</div><div class="pack-actions"><span class="sample-count">${Number(result.sampleCount || result.samples.length)} samples</span><button class="back-home-button pack-favorite${saved ? ' is-saved' : ''}" type="button" aria-pressed="${saved}">${saved ? '♥ Pack salvo' : '♡ Salvar pack'}</button></div></div></div><div class="samples-head"><span>Samples do pack</span><span>Prévia · BPM · tom · estilo</span></div><div class="sample-toolbar"><label class="sample-search"><span aria-hidden="true">⌕</span><input id="sample-search" type="search" placeholder="Buscar por nome…" autocomplete="off" aria-label="Buscar samples por nome"></label><span id="sample-filter-status" class="sample-filter-status"></span></div><div class="sample-list"></div><nav id="samples-pagination" class="samples-pagination hidden" aria-label="Paginação das samples"><button id="samples-previous" type="button" aria-label="Página anterior">← Anterior</button><span id="samples-page-status"></span><button id="samples-next" type="button" aria-label="Próxima página">Próxima →</button></nav>`;
   panel.classList.remove('hidden');
   const packBackButton = panel.querySelector('#back-home');
   packBackButton.textContent = 'Voltar';
