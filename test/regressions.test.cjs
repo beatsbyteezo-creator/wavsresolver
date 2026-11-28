@@ -178,3 +178,17 @@ test('o catálogo inicia durante a verificação silenciosa e não reinicia apó
   assert.equal(layout.inert, false);
   assert.equal(catalogRequests, 2);
 });
+
+test('a faixa de recém-lançados ordena do mais novo ao mais antigo', () => {
+  const dates = section('renderer.js', 'function getPackReleaseDate(', 'function formatPackDate(');
+  const sort = section('renderer.js', 'function sortRecentPacks(', 'function sortPacks(');
+  const packs = [
+    { id: 1, released_at: '13 hours ago' },
+    { id: 2, released_at: '1 day ago' },
+    { id: 3, released_at: '8 hours ago' },
+    { id: 4, released_at: '11 hours ago' }
+  ];
+  const sorted = vm.runInNewContext(dates + sort + '\nsortRecentPacks(packs)', { packs, packReleaseDateCache: new WeakMap() });
+  assert.deepEqual(Array.from(sorted, (pack) => pack.id), [3, 4, 1, 2]);
+  assert.deepEqual(packs.map((pack) => pack.id), [1, 2, 3, 4]);
+});

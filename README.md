@@ -1,6 +1,6 @@
 # WavsResolver
 
-**Versão do projeto: 1.2.11.**
+**Versão do projeto: 1.2.12.**
 
 Aplicativo Windows para explorar packs públicos do WAVS, ouvir previews e baixar arquivos MP3.
 

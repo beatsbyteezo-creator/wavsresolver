@@ -7,14 +7,16 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.11"
+        default: "1.2.12"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - O aviso de download mostra apenas o brilho animado, sem a linha fixa por baixo.
+          - Recém-lançados usa o catálogo completo, do mais novo ao mais antigo.
+          - A faixa carrega mais packs ao chegar ao fim, sem duplicatas.
+          - Fundo com brilho reduzido nos dois temas.
 
 permissions:
   contents: write

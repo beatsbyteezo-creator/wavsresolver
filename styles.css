@@ -3385,18 +3385,18 @@ body[data-theme="light"] .pack-loading-track::after { background: linear-gradien
 
 /* Keep the background continuous behind the content and across both edges. */
 body[data-theme="dark"] {
-  background: radial-gradient(ellipse at 0% 0%, #29d14a91, transparent 46%),
-    radial-gradient(ellipse at 103% 14%, #10b9895f, transparent 47%),
-    radial-gradient(ellipse at -6% 65%, #7344d797, transparent 53%),
-    radial-gradient(ellipse at 102% 78%, #7341d27a, transparent 48%),
-    radial-gradient(ellipse at 44% 124%, #c733a993, transparent 59%), #171520;
+  background: radial-gradient(ellipse at 0% 0%, #29d14a7e, transparent 46%),
+    radial-gradient(ellipse at 103% 14%, #10b98952, transparent 47%),
+    radial-gradient(ellipse at -6% 65%, #7344d783, transparent 53%),
+    radial-gradient(ellipse at 102% 78%, #7341d26b, transparent 48%),
+    radial-gradient(ellipse at 44% 124%, #c733a980, transparent 59%), #171520;
 }
 body[data-theme="light"] {
-  background: radial-gradient(ellipse at 0% 0%, #b5efb5, transparent 45%),
-    radial-gradient(ellipse at 100% 14%, #b2e9d7, transparent 48%),
-    radial-gradient(ellipse at 0% 76%, #d8c7fb, transparent 51%),
-    radial-gradient(ellipse at 100% 80%, #dfcff8, transparent 46%),
-    radial-gradient(ellipse at 49% 118%, #edc2e7, transparent 56%), #f1eef5;
+  background: radial-gradient(ellipse at 0% 0%, #b8ebb9, transparent 45%),
+    radial-gradient(ellipse at 100% 14%, #b6e6d7, transparent 48%),
+    radial-gradient(ellipse at 0% 76%, #d8c9f4, transparent 51%),
+    radial-gradient(ellipse at 100% 80%, #ded0f2, transparent 46%),
+    radial-gradient(ellipse at 49% 118%, #e9c4e4, transparent 56%), #f1eef5;
 }
 body[data-theme] .shell { background: transparent; box-shadow: none; }
 body[data-theme] .topbar > .topbar-destination,

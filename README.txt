@@ -1,5 +1,5 @@
 WAVSRESOLVER - WINDOWS 64 BITS
-VERSAO DO PROJETO: 1.2.11
+VERSAO DO PROJETO: 1.2.12
 
 INSTALACAO
 1. Baixe o instalador Windows x64 na aba Releases do GitHub.

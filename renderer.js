@@ -750,6 +750,14 @@ function bindPackOpenButtons(container) {
   });
 }
 
+function sortRecentPacks(packs) {
+  return [...packs].sort((left, right) => {
+    const leftMinute = Math.floor((getPackReleaseDate(left)?.getTime() || 0) / 60_000);
+    const rightMinute = Math.floor((getPackReleaseDate(right)?.getTime() || 0) / 60_000);
+    return rightMinute - leftMinute || (Date.parse(right.uploaded_at) || 0) - (Date.parse(left.uploaded_at) || 0);
+  });
+}
+
 function sortPacks(packs) {
   const sorted = [...packs];
   const direction = catalogSortSelect.value;
@@ -999,7 +1007,7 @@ function renderHomeHighlights() {
         </div>
       </div>
     </article>`;
-  renderPackCards(recentList, catalogPacks.slice(0, 16), { reveal: true });
+  renderPackCards(recentList, sortRecentPacks(catalogPacks), { reveal: true });
   const genres = getCatalogGenres(catalogPacks).slice(0, 8);
   recentGenres.innerHTML = `<button class="genre-pill${!catalogGenreSelect.value || genreFilterId === 'all' ? ' is-active' : ''}" type="button" data-genre="">Todos</button>${genres.map((genre) => `<button class="genre-pill${catalogGenreSelect.value === genre ? ' is-active' : ''}" type="button" data-genre="${escapeHtml(genre)}">${escapeHtml(genre)}</button>`).join('')}`;
   if (featuredPackSection.packMarkup !== featuredMarkup) {
@@ -1366,7 +1374,7 @@ function handleStartupPackUpdates(packs) {
 }
 
 async function loadNewPacks({ quiet = false } = {}) {
-  if (catalogRefreshInFlight) return;
+  if (catalogRefreshInFlight || catalogPageLoading) return;
   catalogRefreshInFlight = true;
   refreshCatalogButton.disabled = true;
   refreshCatalogButton.innerHTML = loadingIndicatorMarkup('Atualizando…', 'loading-indicator-compact');
@@ -1443,7 +1451,7 @@ function canShowCatalogRefreshStatus() {
 }
 
 async function loadCatalogPage(page) {
-  if (catalogPageLoading || page <= catalogPage || page > catalogLastPage) return;
+  if (catalogRefreshInFlight || catalogPageLoading || page <= catalogPage || page > catalogLastPage) return false;
   const requestVersion = catalogRequestVersion;
   catalogPageLoading = true;
   catalogPageError = false;
@@ -1455,12 +1463,19 @@ async function loadCatalogPage(page) {
     const existingIds = new Set(catalogPacks.map((pack) => String(pack.id)));
     const newPacks = result.packs.filter((pack) => pack?.id !== undefined && !existingIds.has(String(pack.id)));
     catalogPacks = [...catalogPacks, ...newPacks];
-    catalogPage = Number(result.page) || page;
-    catalogLastPage = newPacks.length ? Number(result.lastPage) || catalogPage + 1 : catalogPage;
+    const returnedPage = Number(result.page) || page;
+    if (returnedPage < page || !result.packs.length) {
+      catalogLastPage = catalogPage;
+      return false;
+    }
+    catalogPage = returnedPage;
+    catalogLastPage = Math.max(catalogPage, Number(result.lastPage) || catalogPage + 1);
     catalogTotal = Number(result.total) || catalogPacks.length;
     updateCatalogGenreOptions();
+    return true;
   } catch (error) {
     if (requestVersion === catalogRequestVersion) catalogPageError = true;
+    return false;
   } finally {
     if (requestVersion === catalogRequestVersion) {
       catalogPageLoading = false;
@@ -2651,7 +2666,17 @@ exploreNavigationButton.addEventListener('click', () => setCatalogView('explore'
 favoritesNavigationButton.addEventListener('click', () => setCatalogView('favorites'));
 homeNavigationButton.addEventListener('click', navigateHome);
 recentPreviousButton.addEventListener('click', () => recentList.scrollBy({ left: -recentList.clientWidth * 0.82, behavior: 'smooth' }));
-recentNextButton.addEventListener('click', () => recentList.scrollBy({ left: recentList.clientWidth * 0.82, behavior: 'smooth' }));
+function recentPacksAtEnd() {
+  return recentList.scrollWidth - recentList.clientWidth - recentList.scrollLeft <= 12;
+}
+
+recentNextButton.addEventListener('click', async () => {
+  if (recentPacksAtEnd() && !await loadCatalogPage(catalogPage + 1)) return;
+  recentList.scrollBy({ left: recentList.clientWidth * 0.82, behavior: 'smooth' });
+});
+recentList.addEventListener('scrollend', () => {
+  if (recentPacksAtEnd()) void loadCatalogPage(catalogPage + 1);
+}, { passive: true });
 let outsideWheelDelta = 0;
 let outsideWheelFrame = 0;
 function forwardOutsideWheel(event, preventDefault = true) {

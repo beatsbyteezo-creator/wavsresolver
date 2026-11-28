@@ -502,22 +502,7 @@ ipcMain.handle('load-pack', async (_event, link) => {
   }
 });
 
-ipcMain.handle('load-new-packs', async () => {
-  try {
-    const response = await apiRequest('/api/home/whats-new?genre_id=');
-    const pageData = response.packs ?? {};
-    const packs = pageData.data;
-    if (!Array.isArray(packs)) return { ok: false, message: 'O WAVS não retornou uma lista de packs.' };
-    const currentPage = Number(pageData.current_page ?? pageData.currentPage) || 1;
-    const total = Number(pageData.total) || packs.length;
-    const perPage = Number(pageData.per_page ?? pageData.perPage) || 0;
-    const reportedLastPage = Number(pageData.last_page ?? pageData.lastPage);
-    const lastPage = reportedLastPage > 0 ? reportedLastPage : perPage > 0 ? Math.ceil(total / perPage) : packs.length ? currentPage + 1 : currentPage;
-    return { ok: true, packs, page: currentPage, lastPage, total };
-  } catch (error) {
-    return { ok: false, message: error.message || 'Não consegui carregar os packs novos do WAVS.' };
-  }
-});
+ipcMain.handle('load-new-packs', () => loadGenrePacks('all', 1));
 
 ipcMain.handle('load-pack-preview', async (_event, rawPackId) => {
   const packId = String(rawPackId ?? '').trim();
@@ -542,7 +527,7 @@ ipcMain.handle('load-pack-preview', async (_event, rawPackId) => {
   }
 });
 
-ipcMain.handle('load-genre-packs', async (_event, rawGenreId, rawPage) => {
+async function loadGenrePacks(rawGenreId, rawPage) {
   const genreId = String(rawGenreId ?? '').trim();
   const page = Number(rawPage);
   if (genreId !== 'all' && !/^\d+$/.test(genreId)) return { ok: false, message: 'O gênero selecionado não tem um identificador válido.' };
@@ -574,7 +559,9 @@ ipcMain.handle('load-genre-packs', async (_event, rawGenreId, rawPage) => {
       ? 'Não consegui carregar o catálogo completo do WAVS.'
       : 'Não consegui carregar os packs deste gênero no WAVS.') };
   }
-});
+}
+
+ipcMain.handle('load-genre-packs', (_event, genreId, page) => loadGenrePacks(genreId, page));
 
 ipcMain.handle('load-creator-profile', async (_event, rawId, rawUsername, rawDisplay, rawPage) => {
   const id = String(rawId ?? '').trim();
