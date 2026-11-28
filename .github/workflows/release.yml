@@ -7,16 +7,16 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.9"
+        default: "1.2.10"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - Barra de título integrada ao fundo e ajustes de contraste no tema claro.
-          - Capa e título aparecem durante a abertura do pack, com descrições de até três linhas.
-          - Formas de onda carregam perto da área visível para aliviar a rolagem.
+          - Fundo distribuído pela janela e contornos de painéis suavizados.
+          - Rolagem nas margens, paginação refinada e controles do player separados da forma de onda.
+          - Downloads com a mesma animação discreta de abertura dos packs.
 
 permissions:
   contents: write

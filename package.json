@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/beatsbyteezo-creator/wavsresolver.git"
   },
-  "version": "1.2.9",
+  "version": "1.2.10",
   "private": true,
   "description": "App pessoal para explorar e baixar samples pelo WAVS oficial.",
   "main": "main.cjs",

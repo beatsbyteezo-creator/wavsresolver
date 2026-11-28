@@ -2248,9 +2248,13 @@ function renderSamplePage() {
 
 function changeSamplePage(delta) {
   const pageCount = Math.ceil(filteredSamples.length / samplePageSize);
-  currentSamplePage = Math.min(pageCount - 1, Math.max(0, currentSamplePage + delta));
+  const page = Math.min(pageCount - 1, Math.max(0, currentSamplePage + delta));
+  if (!pageCount || page === currentSamplePage) return;
+  currentSamplePage = page;
   renderSamplePage();
-  panel.querySelector('.sample-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const toolbar = panel.querySelector('.sample-toolbar');
+  const top = appShell.scrollTop + toolbar.getBoundingClientRect().top - appShell.getBoundingClientRect().top - 12;
+  appShell.scrollTo({ top, behavior: 'instant' });
 }
 
 function filterPackSamples() {
@@ -2650,7 +2654,7 @@ recentPreviousButton.addEventListener('click', () => recentList.scrollBy({ left:
 recentNextButton.addEventListener('click', () => recentList.scrollBy({ left: recentList.clientWidth * 0.82, behavior: 'smooth' }));
 let outsideWheelDelta = 0;
 let outsideWheelFrame = 0;
-function forwardOutsideWheel(event) {
+function forwardOutsideWheel(event, preventDefault = true) {
   if (!event.deltaY || event.ctrlKey || event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
   if (event.defaultPrevented || appLayout.inert || event.target.closest?.('input, select, textarea, [role="listbox"]')) return;
   if (appShell.scrollHeight <= appShell.clientHeight) return;
@@ -2659,7 +2663,7 @@ function forwardOutsideWheel(event) {
     : event.deltaMode === 2
       ? event.deltaY * appShell.clientHeight
       : event.deltaY;
-  event.preventDefault();
+  if (preventDefault) event.preventDefault();
   outsideWheelDelta += delta;
   if (outsideWheelFrame) return;
   outsideWheelFrame = requestAnimationFrame(() => {
@@ -2670,7 +2674,12 @@ function forwardOutsideWheel(event) {
 }
 document.querySelector('.app-sidebar').addEventListener('wheel', forwardOutsideWheel, { passive: false });
 bottomPlayer.addEventListener('wheel', forwardOutsideWheel, { passive: false });
-appShell.addEventListener('scroll', () => {
+document.body.addEventListener('wheel', (event) => {
+  if (event.target === document.body || event.target === appLayout || event.target === document.documentElement) {
+    forwardOutsideWheel(event, false);
+  }
+}, { passive: true });
+appShell.addEventListener('scrollend', () => {
   if (catalogRenderPending && appShell.scrollTop <= 2 && canShowCatalogRefreshStatus()) renderCatalog();
 }, { passive: true });
 catalogMoreButton.addEventListener('click', () => {
