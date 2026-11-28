@@ -25,7 +25,8 @@ const appLayout = document.querySelector('.app-layout');
 const sampleSearchResults = document.querySelector('#sample-search-results');
 const sampleSearchList = document.querySelector('#sample-search-list');
 let appUpdatePreviousFocus = null;
-const appUpdateLaterButton = document.querySelector('#app-update-later');
+const appUpdateCard = appUpdateOverlay.querySelector('.app-update-card');
+const appUpdateNotesPanel = appUpdateOverlay.querySelector('.app-update-notes');
 const appUpdateNowButton = document.querySelector('#app-update-now');
 const loadButton = document.querySelector('#load-button');
 const sampleDestinationPath = document.querySelector('#sample-destination-path');
@@ -83,9 +84,8 @@ let filteredCatalogPacks = [];
 let favoritePacks = [];
 let catalogView = 'explore';
 let sidebarSection = 'home';
-let appUpdateCardDismissed = false;
-let appUpdateCardMode = 'offer';
-let appUpdateDownloadStarted = false;
+let appUpdateState = 'checking';
+let catalogStarted = false;
 let featuredPackIndex = 0;
 const activeDownloadJobs = new Map();
 const downloadPresentations = new Map();
@@ -2779,131 +2779,116 @@ window.wavsResolver.onDownloadFinished((data) => {
   if (data.state === 'completed') playNotificationBubble();
   setDownloadStatus(name, data.state === 'completed', presentation);
 });
-window.wavsResolver.onAppUpdateStatus((data) => {
-  if (data.state === 'available') {
-    appUpdateCardMode = 'offer';
-    appUpdateDownloadStarted = false;
-    appUpdateCardDismissed = false;
-    appUpdateTitle.textContent = 'Atualização disponível';
-    appUpdateKicker.textContent = 'Nova versão';
-    appUpdateVersion.textContent = 'Versão ' + formatDisplayVersion(data.version || 'nova');
-    appUpdateNotesHeading.textContent = 'Novidades';
-    appUpdateNotes.innerHTML = formatReleaseNotes(data.releaseNotes);
-    appUpdateProgress.value = 0;
-    appUpdateProgressWrap.classList.add('hidden');
-    appUpdateSignal.style.setProperty('--update-fill', '0%');
-    appUpdateMessage.textContent = 'Escolha quando deseja atualizar.';
-    appUpdateLaterButton.classList.remove('hidden');
-    appUpdateLaterButton.disabled = false;
-    appUpdateLaterButton.textContent = 'Mais tarde';
-    appUpdateNowButton.disabled = false;
-    appUpdateNowButton.textContent = 'Atualizar agora';
-    showAppUpdateCard(appUpdateNowButton);
-  } else if (data.state === 'download-started') {
-    appUpdateDownloadStarted = true;
-    appUpdateProgressWrap.classList.remove('hidden');
-    appUpdateMessage.textContent = 'Baixando a atualização em segundo plano.';
-    appUpdateLaterButton.textContent = 'Ocultar';
-    appUpdateNowButton.disabled = true;
-    appUpdateNowButton.textContent = 'Baixando…';
-  } else if (data.state === 'progress') {
-    const percent = Math.max(0, Math.min(100, Number(data.percent) || 0));
-    appUpdateProgressWrap.classList.remove('hidden');
-    appUpdateProgress.value = percent;
-    appUpdateSignal.style.setProperty('--update-fill', `${percent}%`);
-    appUpdateMessage.textContent = 'Baixando a atualização · ' + Math.round(percent) + '%';
-    appUpdateLaterButton.textContent = 'Ocultar';
-    appUpdateNowButton.disabled = true;
-    appUpdateNowButton.textContent = 'Baixando…';
-  } else if (data.state === 'downloaded') {
-    appUpdateSignal.style.setProperty('--update-fill', '100%');
-    appUpdateProgress.value = 100;
-    appUpdateMessage.textContent = 'Download concluído. Reiniciando para aplicar a atualização…';
-    appUpdateNowButton.disabled = true;
-    appUpdateNowButton.textContent = 'Reiniciando…';
-    appUpdateLaterButton.disabled = true;
-    appUpdateLaterButton.classList.add('hidden');
-  } else if (data.state === 'applied') {
-    appUpdateCardMode = 'whats-new';
-    appUpdateCardDismissed = false;
-    appUpdateTitle.textContent = 'Atualização concluída';
-    appUpdateKicker.textContent = 'Versão instalada';
-    appUpdateVersion.textContent = 'Versão ' + formatDisplayVersion(data.version || 'atual');
-    appUpdateNotesHeading.textContent = 'O que há de novo';
-    appUpdateNotes.innerHTML = formatReleaseNotes(data.releaseNotes);
-    appUpdateProgressWrap.classList.add('hidden');
-    appUpdateLaterButton.classList.add('hidden');
-    appUpdateNowButton.disabled = false;
-    appUpdateNowButton.textContent = 'Entendi';
-    appUpdateSignal.style.setProperty('--update-fill', '100%');
-    showAppUpdateCard(appUpdateNowButton);
-  } else if (data.state === 'error') {
-    if (!appUpdateOverlay.classList.contains('hidden') && !appUpdateCardDismissed) {
-      appUpdateDownloadStarted = false;
-      appUpdateMessage.textContent = 'Não consegui baixar a atualização. Você pode tentar novamente.';
-      appUpdateLaterButton.disabled = false;
-      appUpdateLaterButton.textContent = 'Mais tarde';
-      appUpdateNowButton.disabled = false;
-      appUpdateNowButton.textContent = 'Tentar novamente';
-    } else {
-      setDownloadStatus('Não foi possível verificar atualizações. Confira sua conexão e tente novamente mais tarde.', false, { kind: 'update' });
-    }
-  } else if (data.state === 'manual') {
-    setDownloadStatus('Esta versão portátil precisa ser atualizada manualmente.', false, { kind: 'update' });
-  }
-});
-
-function showAppUpdateCard(initialFocus) {
-  if (appUpdateOverlay.classList.contains('hidden')) appUpdatePreviousFocus = document.activeElement;
-  appLayout.inert = true;
-  appUpdateOverlay.classList.remove('hidden');
-  appUpdateOverlay.setAttribute('aria-hidden', 'false');
-  initialFocus.focus();
-}
-
-function dismissAppUpdateCard() {
+function openCatalogAfterUpdateCheck() {
   appLayout.inert = false;
-  appUpdateCardDismissed = true;
   appUpdateOverlay.classList.add('hidden');
   appUpdateOverlay.setAttribute('aria-hidden', 'true');
   appUpdatePreviousFocus?.focus();
   appUpdatePreviousFocus = null;
-  if (appUpdateCardMode === 'whats-new') window.wavsResolver.acknowledgeAppUpdate().catch(() => {});
+  if (catalogStarted) return;
+  catalogStarted = true;
+  loadNewPacks();
+  loadDiscoveryPacks('all', 'Todos os packs');
 }
 
-appUpdateLaterButton.addEventListener('click', dismissAppUpdateCard);
-appUpdateNowButton.addEventListener('click', async () => {
-  if (appUpdateCardMode === 'whats-new') {
-    dismissAppUpdateCard();
+function renderAppUpdateStatus(data) {
+  const previousState = appUpdateState;
+  appUpdateState = data.state;
+  appUpdateOverlay.dataset.state = data.state;
+  if (data.state === 'current') {
+    openCatalogAfterUpdateCheck();
     return;
   }
-  if (appUpdateNowButton.disabled || appUpdateDownloadStarted) return;
+
+  if (appUpdateOverlay.classList.contains('hidden')) appUpdatePreviousFocus = document.activeElement;
+  appLayout.inert = true;
+  appUpdateOverlay.classList.remove('hidden');
+  appUpdateOverlay.setAttribute('aria-hidden', 'false');
+  if (data.version) appUpdateVersion.textContent = 'Versão ' + formatDisplayVersion(data.version);
+  const checking = data.state === 'checking';
+  const checkFailed = data.state === 'check-error';
+  const applied = data.state === 'applied';
+  const manual = data.state === 'manual';
+  const downloadFailed = data.state === 'download-error';
+  const installFailed = data.state === 'install-error';
+  const installing = data.state === 'downloaded';
+  const downloading = ['download-started', 'progress'].includes(data.state);
+  const busy = checking || downloading || installing;
+  const showNotes = !checking && !checkFailed;
+  appUpdateKicker.textContent = applied ? 'Versão instalada' : showNotes ? 'Nova versão' : 'Inicialização';
+  appUpdateTitle.textContent = checking ? 'Verificando atualizações' : checkFailed ? 'Falha na verificação' : applied ? 'Atualização concluída' : 'Atualização obrigatória';
+  appUpdateNotesPanel.classList.toggle('hidden', !showNotes);
+  appUpdateNotesHeading.textContent = applied ? 'O que há de novo' : 'Novidades';
+  if (showNotes && (typeof data.releaseNotes === 'string' && data.releaseNotes !== appUpdateNotes.dataset.releaseNotes)) {
+    appUpdateNotes.innerHTML = formatReleaseNotes(data.releaseNotes);
+    appUpdateNotes.dataset.releaseNotes = data.releaseNotes;
+  }
+
+  const percent = applied || installing || installFailed ? 100 : Math.max(0, Math.min(100, Number(data.percent) || 0));
+  appUpdateSignal.style.setProperty('--update-fill', percent + '%');
+  if (checking || data.state === 'download-started') appUpdateProgress.removeAttribute('value');
+  else appUpdateProgress.value = percent;
+  appUpdateProgress.classList.toggle('hidden', !busy && !downloadFailed && !installFailed);
+  appUpdateProgressWrap.classList.toggle('hidden', applied);
+  appUpdateMessage.textContent = data.message || (checking ? 'Consultando a versão mais recente.'
+    : checkFailed ? 'Confira sua conexão e tente novamente para entrar no app.'
+    : manual ? 'Instale a versão mais recente pelo GitHub para entrar no app.'
+    : installing ? 'Instalando a atualização e reiniciando…'
+    : installFailed ? 'A instalação falhou. Tente novamente para continuar.'
+    : downloadFailed ? 'O download falhou. Tente novamente para continuar.'
+    : data.state === 'progress' ? 'Baixando a atualização · ' + Math.round(percent) + '%'
+    : downloading ? 'Preparando o download da atualização…'
+    : 'Atualize para continuar usando o WavsResolver.');
+
+  appUpdateNowButton.classList.toggle('hidden', busy);
+  appUpdateNowButton.disabled = busy;
+  appUpdateNowButton.textContent = applied ? 'Entrar no app' : manual ? 'Abrir GitHub'
+    : checkFailed || downloadFailed || installFailed ? 'Tentar novamente' : 'Atualizar agora';
+  if (previousState !== data.state || !appUpdateCard.contains(document.activeElement)) {
+    (busy ? appUpdateCard : appUpdateNowButton).focus();
+  }
+}
+
+window.wavsResolver.onAppUpdateStatus(renderAppUpdateStatus);
+appUpdateCard.focus();
+appUpdateNowButton.addEventListener('click', async () => {
+  if (appUpdateNowButton.disabled) return;
   appUpdateNowButton.disabled = true;
-  appUpdateNowButton.textContent = 'Iniciando…';
-  appUpdateProgressWrap.classList.remove('hidden');
-  appUpdateMessage.textContent = 'Preparando o download da atualização.';
+  const state = appUpdateState;
   try {
-    const result = await window.wavsResolver.downloadAppUpdate();
-    if (!result?.ok) throw new Error(result?.message || 'Não foi possível iniciar o download.');
+    if (state === 'applied') {
+      const result = await window.wavsResolver.acknowledgeAppUpdate();
+      if (!result?.ok) throw new Error('Não foi possível confirmar a atualização.');
+    } else if (state === 'manual') {
+      await window.wavsResolver.openAppUpdateRelease();
+    } else if (state === 'check-error') {
+      await window.wavsResolver.retryAppUpdateCheck();
+    } else {
+      const result = await window.wavsResolver.downloadAppUpdate();
+      if (!result?.ok && appUpdateState !== 'download-error') {
+        throw new Error(result?.message || 'Não foi possível iniciar a atualização.');
+      }
+    }
   } catch (error) {
-    appUpdateDownloadStarted = false;
-    appUpdateMessage.textContent = error.message || 'Não foi possível iniciar o download.';
-    appUpdateNowButton.disabled = false;
-    appUpdateNowButton.textContent = 'Tentar novamente';
+    appUpdateMessage.textContent = error.message || 'Não foi possível continuar. Tente novamente.';
+    appUpdateProgressWrap.classList.remove('hidden');
+    appUpdateProgress.classList.add('hidden');
+  } finally {
+    if (appUpdateState === state) appUpdateNowButton.disabled = false;
   }
 });
 document.addEventListener('keydown', (event) => {
   if (appUpdateOverlay.classList.contains('hidden')) return;
   if (event.key === 'Escape') {
-    if (!appUpdateLaterButton.disabled) dismissAppUpdateCard();
+    event.preventDefault();
     return;
   }
   if (event.key !== 'Tab') return;
-  const controls = [appUpdateNotes, appUpdateLaterButton, appUpdateNowButton].filter((control) => !control.disabled && !control.classList.contains('hidden'));
+  const controls = [appUpdateNotes, appUpdateNowButton].filter((control) => !control.disabled && control.getClientRects().length);
   const index = controls.indexOf(document.activeElement);
   const next = index < 0 ? (event.shiftKey ? controls.length - 1 : 0) : (index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length;
   event.preventDefault();
-  controls[next]?.focus();
+  (controls[next] || appUpdateCard).focus();
 });
 window.wavsResolver.getAppVersion().then((version) => {
   appVersionLabel.textContent = `v${formatDisplayVersion(version)}`;
@@ -2922,8 +2907,6 @@ window.wavsResolver.getFavoritePacks().then((packs) => {
   updateCatalogGenreOptions();
   renderCatalog();
 }).catch((error) => setStatus(error.message || 'Não foi possível carregar os packs salvos.'));
-loadNewPacks();
-loadDiscoveryPacks('all', 'Todos os packs');
 
 
 

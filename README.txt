@@ -1,5 +1,5 @@
 WAVSRESOLVER - WINDOWS 64 BITS
-VERSAO DO PROJETO: 1.2.0 (MOSTRADA NO APP COMO 1.2)
+VERSAO DO PROJETO: 1.2.7
 
 INSTALACAO
 1. Baixe o instalador Windows x64 na aba Releases do GitHub.
@@ -9,7 +9,7 @@ INSTALACAO
 
 ATUALIZACOES
 O app verifica novas versoes ao iniciar e mostra um resumo das mudancas.
-Escolha Atualizar agora para baixar dentro do app ou Mais tarde para adiar.
+Se houver uma atualizacao, escolha Atualizar agora para poder entrar no app.
 Ao terminar, o app reinicia e aplica a atualizacao em segundo plano.
 
 COMO USAR

@@ -19,13 +19,15 @@ const API_BASE = 'https://api.wavs.com';
 const API_CLIENT_SESSION = '116c0a73f6cae0c07cf9c9f99fc8bdcfd316ed31859f95fc16bd3a9ffb24561b';
 let mainWindow;
 let appUpdateCheckTimer;
-let lastAppUpdateErrorAt = 0;
+let appUpdateStatus = { state: 'checking' };
+let appUpdateCheckInFlight = false;
+let appUpdateNotice = null;
+const releasePage = "https://github.com/beatsbyteezo-creator/wavsresolver/releases/latest";
 let appUpdateAvailable = false;
 let appUpdateDownloadStarted = false;
 let appUpdateDownloaded = false;
 let appUpdateReleaseInfo = null;
 let appUpdateNoticePath;
-let appUpdateNoticePending = false;
 const reservedPaths = new Set();
 const requestedDownloads = new Map();
 const activeDownloads = new Map();
@@ -307,7 +309,10 @@ function createWindow() {
   mainWindow.maximize();
   mainWindow.setMenuBarVisibility(false);
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
-  mainWindow.webContents.once('did-finish-load', startAppUpdater);
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (appUpdateCheckTimer) sendAppUpdateStatus(appUpdateStatus);
+    else startAppUpdater();
+  });
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     openExternalUrl(url);
     return { action: 'deny' };
@@ -322,33 +327,68 @@ function createWindow() {
 }
 
 function sendAppUpdateStatus(data) {
+  appUpdateStatus = data;
   if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed()) {
     mainWindow.webContents.send('app-update-status', data);
   }
 }
 
-function reportAppUpdateError(error) {
-  const now = Date.now();
-  if (now - lastAppUpdateErrorAt < 15_000) return;
-  lastAppUpdateErrorAt = now;
-  if (!appUpdateDownloadStarted) appUpdateAvailable = false;
-  appUpdateDownloadStarted = false;
-  appUpdateDownloaded = false;
-  console.warn('Falha ao buscar ou baixar uma atualização:', error.message || error);
-  sendAppUpdateStatus({ state: 'error' });
+function reportCurrentVersion() {
+  if (appUpdateNotice) sendAppUpdateStatus({ state: 'applied', ...appUpdateNotice });
+  else sendAppUpdateStatus({ state: 'current', version: app.getVersion() });
+}
+
+async function checkPortableUpdate() {
+  const response = await fetch('https://api.github.com/repos/beatsbyteezo-creator/wavsresolver/releases/latest', {
+    headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store', signal: AbortSignal.timeout(15000)
+  });
+  if (!response.ok) throw new Error('GitHub respondeu ' + response.status);
+  const release = await response.json();
+  const version = String(release.tag_name || '').replace(/^v/, '');
+  if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Versão publicada inválida.');
+  const installed = app.getVersion().split('.').map(Number);
+  const difference = version.split('.').map((part, index) => Number(part) - installed[index]).find(Boolean);
+  if (difference > 0) {
+    sendAppUpdateStatus({ state: 'manual', version, releaseNotes: String(release.body || '').slice(0, 12000) });
+  } else {
+    reportCurrentVersion();
+  }
+}
+
+async function checkForAppUpdates() {
+  if (appUpdateCheckInFlight || appUpdateAvailable || appUpdateDownloaded || ['applied', 'manual'].includes(appUpdateStatus.state)) return;
+  const blocking = appUpdateStatus.state !== 'current';
+  if (blocking) sendAppUpdateStatus({ state: 'checking', version: app.getVersion() });
+  appUpdateCheckInFlight = true;
+  try {
+    if (process.env.PORTABLE_EXECUTABLE_FILE) await checkPortableUpdate();
+    else if (!await autoUpdater.checkForUpdates()) throw new Error('O atualizador está indisponível.');
+  } catch (error) {
+    console.warn('Falha ao verificar atualizações:', error.message || error);
+    if (blocking) sendAppUpdateStatus({ state: 'check-error', version: app.getVersion() });
+  } finally {
+    appUpdateCheckInFlight = false;
+  }
 }
 
 function startAppUpdater() {
-  if (!app.isPackaged || process.platform !== 'win32' || appUpdateCheckTimer) return;
-  if (process.env.PORTABLE_EXECUTABLE_FILE) {
-    sendAppUpdateStatus({ state: 'manual' });
+  if (!app.isPackaged || process.platform !== 'win32') {
+    reportCurrentVersion();
     return;
+  }
+  try {
+    const notice = JSON.parse(fs.readFileSync(appUpdateNoticePath, 'utf8'));
+    if (notice?.version === app.getVersion()) {
+      appUpdateNotice = { version: notice.version, releaseNotes: String(notice.releaseNotes || '').slice(0, 12000) };
+    } else {
+      fs.unlinkSync(appUpdateNoticePath);
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') console.error('Não foi possível carregar as novidades da atualização:', error);
   }
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.autoRunAppAfterInstall = true;
-  let initialCheckReported = false;
-  let checkInFlight = false;
   autoUpdater.on('update-available', (info) => {
     appUpdateAvailable = true;
     appUpdateDownloadStarted = false;
@@ -372,12 +412,8 @@ function startAppUpdater() {
     appUpdateReleaseInfo = { version: info.version, releaseNotes: releaseNotes.slice(0, 12000) };
     sendAppUpdateStatus({ state: 'available', ...appUpdateReleaseInfo });
   });
-  autoUpdater.on('update-not-available', (info) => {
-    if (initialCheckReported) return;
-    initialCheckReported = true;
-    sendAppUpdateStatus({ state: 'current', version: info.version || app.getVersion() });
-  });
-  autoUpdater.on('download-progress', (progress) => sendAppUpdateStatus({ state: 'progress', percent: progress.percent }));
+  autoUpdater.on('update-not-available', reportCurrentVersion);
+  autoUpdater.on('download-progress', (progress) => sendAppUpdateStatus({ state: 'progress', ...appUpdateReleaseInfo, percent: progress.percent }));
   autoUpdater.on('update-downloaded', (info) => {
     appUpdateDownloaded = true;
     const notice = {
@@ -390,59 +426,56 @@ function startAppUpdater() {
     } catch (error) {
       console.error('Não foi possível salvar as novidades da atualização:', error);
     }
-    sendAppUpdateStatus({ state: 'downloaded', version: notice.version });
+    sendAppUpdateStatus({ state: 'downloaded', ...appUpdateReleaseInfo, version: notice.version });
     // Apply the NSIS update silently, then relaunch WavsResolver.
     const installTimer = setTimeout(() => autoUpdater.quitAndInstall(true, true), 1100);
     installTimer.unref?.();
   });
-  autoUpdater.on('error', reportAppUpdateError);
-
-  const checkForUpdates = () => {
-    if (checkInFlight || appUpdateAvailable || appUpdateDownloaded || appUpdateNoticePending) return;
-    checkInFlight = true;
-    autoUpdater.checkForUpdates()
-      .catch(reportAppUpdateError)
-      .finally(() => { checkInFlight = false; });
-  };
-  const initialCheck = setTimeout(checkForUpdates, 1000);
-  initialCheck.unref?.();
-  appUpdateCheckTimer = setInterval(checkForUpdates, 60 * 1000);
+  autoUpdater.on('error', (error) => {
+    if (!appUpdateDownloaded) return;
+    console.warn('Falha ao instalar atualização:', error.message || error);
+    sendAppUpdateStatus({ state: 'install-error', ...appUpdateReleaseInfo });
+  });
+  appUpdateCheckTimer = setInterval(checkForAppUpdates, 60 * 1000);
   appUpdateCheckTimer.unref?.();
-
-  try {
-    const notice = JSON.parse(fs.readFileSync(appUpdateNoticePath, 'utf8'));
-    if (notice?.version && notice.version === app.getVersion()) {
-      appUpdateNoticePending = true;
-      sendAppUpdateStatus({ state: 'applied', version: notice.version, releaseNotes: String(notice.releaseNotes || '').slice(0, 12000) });
-    } else {
-      fs.unlinkSync(appUpdateNoticePath);
-    }
-  } catch (error) {
-    if (error.code !== 'ENOENT') console.error('Não foi possível carregar as novidades da atualização:', error);
-  }
+  void checkForAppUpdates();
 }
+
+ipcMain.handle('retry-app-update-check', () => {
+  if (appUpdateStatus.state === 'check-error') return checkForAppUpdates();
+});
+ipcMain.handle('open-app-update-release', () => {
+  if (appUpdateStatus.state === 'manual') return shell.openExternal(releasePage);
+});
 
 ipcMain.handle('get-app-version', () => app.getVersion());
 ipcMain.handle('download-app-update', async () => {
   if (!appUpdateAvailable) return { ok: false, message: 'Não há uma atualização disponível agora.' };
-  if (appUpdateDownloaded) return { ok: true, ready: true };
+  if (appUpdateDownloaded) {
+    if (appUpdateStatus.state === 'install-error') {
+      sendAppUpdateStatus({ state: 'downloaded', ...appUpdateReleaseInfo });
+      autoUpdater.quitAndInstall(true, true);
+    }
+    return { ok: true, ready: true };
+  }
   if (appUpdateDownloadStarted) return { ok: true, downloading: true };
   appUpdateDownloadStarted = true;
-  sendAppUpdateStatus({ state: 'download-started', version: appUpdateReleaseInfo?.version || '' });
+  sendAppUpdateStatus({ state: 'download-started', ...appUpdateReleaseInfo });
   try {
     await autoUpdater.downloadUpdate();
     return { ok: true, downloading: true };
   } catch (error) {
     appUpdateDownloadStarted = false;
     console.warn('Não foi possível iniciar o download da atualização:', error.message || error);
-    sendAppUpdateStatus({ state: 'error' });
+    sendAppUpdateStatus({ state: 'download-error', ...appUpdateReleaseInfo });
     return { ok: false, message: error.message || 'Não foi possível iniciar o download.' };
   }
 });
 ipcMain.handle('acknowledge-app-update', () => {
   try {
     if (appUpdateNoticePath && fs.existsSync(appUpdateNoticePath)) fs.unlinkSync(appUpdateNoticePath);
-    appUpdateNoticePending = false;
+    appUpdateNotice = null;
+    reportCurrentVersion();
     return { ok: true };
   } catch (error) {
     return { ok: false, message: error.message };

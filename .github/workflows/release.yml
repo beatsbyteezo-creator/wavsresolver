@@ -7,16 +7,16 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.6"
+        default: "1.2.7"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - Novo aviso de atualização com notas, progresso e navegação por teclado.
-          - A busca ganhou uma lista de samples com acesso direto ao pack.
-          - Correções na reprodução, na abertura de packs e no atalho da pasta de downloads.
+          - Verificação de versão assim que o app abre.
+          - Atualizações obrigatórias antes de entrar no catálogo.
+          - Botão para tentar novamente se a verificação ou a instalação falhar.
 
 permissions:
   contents: write

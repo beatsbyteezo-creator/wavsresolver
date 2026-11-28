@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('wavsResolver', {
   toggleFavoritePack: (pack) => ipcRenderer.invoke('toggle-favorite-pack', pack),
   getAppPreferences: () => ipcRenderer.invoke('get-app-preferences'),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  retryAppUpdateCheck: () => ipcRenderer.invoke('retry-app-update-check'),
+  openAppUpdateRelease: () => ipcRenderer.invoke('open-app-update-release'),
   downloadAppUpdate: () => ipcRenderer.invoke('download-app-update'),
   acknowledgeAppUpdate: () => ipcRenderer.invoke('acknowledge-app-update'),
   saveAppPreference: (key, value) => ipcRenderer.invoke('save-app-preference', key, value),

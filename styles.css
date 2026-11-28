@@ -3003,10 +3003,8 @@ body[data-theme="light"] .app-update-card {
 .app-update-progress-wrap p { margin: 8px 0 0; color: var(--update-muted); font-size: 12px; }
 .app-update-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 18px clamp(14px, 4vw, 26px) 22px; }
 .app-update-actions button { min-height: 44px; padding: 0 17px; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 750; }
-.app-update-later { border: 1px solid var(--update-border); color: var(--update-text); background: var(--update-panel); }
 .app-update-now { border: 1px solid #c5a9ff; color: #24143a; background: linear-gradient(120deg, #f1e8ff, #cbb0ff); box-shadow: 0 6px 22px #a778ff33; }
 .app-update-now:hover:enabled { background: #efe3ff; }
-.app-update-later:hover:enabled { border-color: var(--update-accent); }
 .app-update-actions button:disabled { cursor: progress; opacity: .65; }
 .app-update-actions button:focus-visible { outline: 2px solid var(--update-accent); outline-offset: 3px; }
 
@@ -3233,4 +3231,13 @@ body[data-theme="light"] .creator-profile-photo { border-color: rgba(111,82,159,
   .app-update-notes, .app-update-progress-wrap { margin-top: 12px; }
   .app-update-notes { padding-block: 11px; }
   .app-update-actions { padding-block: 12px 15px; }
+}
+
+.app-update-card:focus { outline: none; }
+.app-update-actions:has(button.hidden) { display: none; }
+.app-update-card:has(.app-update-actions button.hidden) .app-update-progress-wrap { margin-bottom: 22px; }
+.app-update-progress-wrap progress:indeterminate::-webkit-progress-bar { background: linear-gradient(90deg, var(--update-panel) 15%, #9e77ee 50%, var(--update-panel) 85%); background-size: 200% 100%; animation: update-check-progress 1.2s ease-in-out infinite alternate; }
+@keyframes update-check-progress { to { background-position: 100% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .app-update-progress-wrap progress:indeterminate::-webkit-progress-bar { animation: none; }
 }

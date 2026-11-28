@@ -106,3 +106,62 @@ test('a busca mantém samples quando as respostas de título e criadores são in
   assert.match(result.warning, /criadores/);
   assert.match(result.warning, /packs/);
 });
+
+test('a checagem obrigatória começa sem atraso e permite tentar novamente após erro', async () => {
+  const { EventEmitter } = require('node:events');
+  const autoUpdater = new EventEmitter();
+  const messages = [];
+  const handlers = new Map();
+  let attempts = 0;
+  autoUpdater.checkForUpdates = async () => {
+    if (++attempts === 1) throw new Error('Sem conexão');
+    autoUpdater.emit('update-available', { version: '1.2.8', releaseNotes: '- Atualização de teste' });
+    return {};
+  };
+  const code = section('main.cjs', 'function reportCurrentVersion()', "ipcMain.handle('get-app-version'");
+  const closure = [
+    "let appUpdateStatus = { state: 'checking' };",
+    'let appUpdateCheckInFlight = false, appUpdateAvailable = false, appUpdateDownloaded = false;',
+    'let appUpdateDownloadStarted = false, appUpdateNotice = null, appUpdateReleaseInfo = null;',
+    "let appUpdateNoticePath = 'pending-update-notice.json', appUpdateCheckTimer;",
+    'function sendAppUpdateStatus(data) { appUpdateStatus = data; record(data); }'
+  ].join('\n');
+  const ctx = vm.createContext({
+    app: { getVersion: () => '1.2.7', isPackaged: true },
+    process: { platform: 'win32', env: {} },
+    fs: { readFileSync() { throw Object.assign(new Error(), { code: 'ENOENT' }); } },
+    autoUpdater,
+    console: { warn() {} },
+    ipcMain: { handle: (name, handler) => handlers.set(name, handler) },
+    setInterval: () => ({}),
+    record: (data) => messages.push(data.state)
+  });
+  vm.runInContext(closure + '\n' + code + '\nstartAppUpdater()', ctx);
+  assert.equal(attempts, 1);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(messages, ['checking', 'check-error']);
+  await handlers.get('retry-app-update-check')();
+  assert.deepEqual(messages, ['checking', 'check-error', 'checking', 'available']);
+});
+
+test('o catálogo só inicia após confirmar a versão e não reinicia em checagens periódicas', () => {
+  const layout = { inert: true };
+  let catalogRequests = 0;
+  const code = section('renderer.js', 'function openCatalogAfterUpdateCheck()', 'window.wavsResolver.onAppUpdateStatus(');
+  const overlay = { dataset: {}, classList: { add() {} }, setAttribute() {} };
+  const ctx = vm.createContext({
+    appLayout: layout,
+    appUpdateOverlay: overlay,
+    appUpdateState: 'checking',
+    appUpdatePreviousFocus: null,
+    catalogStarted: false,
+    loadNewPacks: () => { catalogRequests++; },
+    loadDiscoveryPacks: () => { catalogRequests++; }
+  });
+  vm.runInContext(code, ctx);
+  assert.equal(layout.inert, true);
+  assert.equal(catalogRequests, 0);
+  vm.runInContext("renderAppUpdateStatus({ state: 'current' }); renderAppUpdateStatus({ state: 'current' });", ctx);
+  assert.equal(layout.inert, false);
+  assert.equal(catalogRequests, 2);
+});
