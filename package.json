@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/beatsbyteezo-creator/wavsresolver.git"
   },
-  "version": "1.2.0",
+  "version": "1.2.6",
   "private": true,
   "description": "App pessoal para explorar e baixar samples pelo WAVS oficial.",
   "main": "main.cjs",
@@ -14,7 +14,8 @@
     "start": "electron .",
     "build:win": "electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish never",
     "build:portable": "electron-builder --win portable --x64 --publish never",
-    "release:win": "electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish always"
+    "release:win": "electron-builder --config electron-builder.config.cjs --win nsis --x64 --publish always",
+    "test": "node --test"
   },
   "build": {
     "appId": "com.nyoandwhite.wavsresolver",

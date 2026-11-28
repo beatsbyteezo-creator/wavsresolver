@@ -756,12 +756,13 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
       } catch (error) {
         warnings.push(`A busca de criadores falhou: ${error.message || 'erro desconhecido'}.`);
       }
-      const producers = producerResponse?.sellers?.data;
-      if (producerResponse && !Array.isArray(producers)) {
+      const producerData = producerResponse?.sellers?.data;
+      if (producerResponse && !Array.isArray(producerData)) {
         warnings.push('O WAVS não retornou resultados de criadores válidos.');
       }
+      const producers = Array.isArray(producerData) ? producerData : [];
       const normalizedQuery = normalizeSearchText(producerQuery);
-      creators = (producers || [])
+      creators = producers
         .filter((producer) => /^\d+$/.test(String(producer?.id ?? '')) && typeof producer?.username === 'string' && /^[\p{L}\p{N}._-]+$/u.test(producer.username))
         .map((producer) => ({
           id: String(producer.id),
@@ -780,7 +781,7 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
         producer.display,
         producer.username
       ].some((name) => normalizeSearchText(name) === normalizedQuery));
-      const matchedProducer = exactProducer || (producers || []).find((producer) =>
+      const matchedProducer = exactProducer || creators.find((producer) =>
         matchesSearchQuery(producerQuery, [producer.display, producer.username]));
       if (matchedProducer?.id) {
         creator = {
@@ -816,7 +817,7 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
     if (sampleSearchResult.status === 'rejected') {
       warnings.push(`A busca de samples falhou: ${sampleSearchResult.reason.message || 'erro desconhecido'}.`);
     }
-    const titlePacks = titleResponse?.data || [];
+    const titlePacks = Array.isArray(titleResponse?.data) ? titleResponse.data : [];
     const packsById = new Map();
     for (const pack of [...(sampleSearchData?.packs || []), ...titlePacks, ...(creatorData?.packs || []), ...genreData.packs]) {
       if (pack?.id === undefined || pack?.id === null) continue;
@@ -835,7 +836,7 @@ ipcMain.handle('search-packs', async (_event, rawQuery, rawPage, rawCreator) => 
       });
     }
     const packs = [...packsById.values()];
-    if (!titleResponse && !genreData.packs.length && !creatorData?.packs.length && !sampleSearchData) {
+    if (!Array.isArray(titleResponse?.data) && !genreData.packs.length && !creatorData && !sampleSearchData) {
       return { ok: false, message: warnings.join(' ') || 'Não consegui pesquisar no WAVS.' };
     }
     const samplesById = new Map();
@@ -951,7 +952,7 @@ app.whenReady().then(() => {
     { label: 'WavsResolver', submenu: [
       { label: 'Início', click: () => mainWindow?.loadFile(path.join(__dirname, 'index.html')) },
       { label: 'Explorar packs novos', click: () => shell.openExternal('https://wavs.com/explore') },
-      { label: 'Abrir pasta de downloads', click: () => shell.openPath(downloadDirectory) },
+      { label: 'Abrir pasta de downloads', click: () => shell.openPath(sampleDownloadDirectory) },
       { type: 'separator' }, { role: 'quit', label: 'Sair' }
     ] },
     { label: 'Navegação', submenu: [ { role: 'reload', label: 'Recarregar app' }, { type: 'separator' }, { role: 'toggleDevTools', label: 'Ferramentas do desenvolvedor' } ] }

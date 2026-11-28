@@ -7,15 +7,16 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.5"
+        default: "1.2.6"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - Correção de acentos, símbolos e ícones que apareciam como interrogações.
-          - Refinamentos visuais nos cards e nas capas dos packs.
+          - Novo aviso de atualização com notas, progresso e navegação por teclado.
+          - A busca ganhou uma lista de samples com acesso direto ao pack.
+          - Correções na reprodução, na abertura de packs e no atalho da pasta de downloads.
 
 permissions:
   contents: write
@@ -36,11 +37,14 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Executar testes
+        run: npm test
+
       - name: Definir a versao desta release
         run: |
           $releaseVersion = $env:RELEASE_VERSION.Trim() -replace '^v', ''
           if ($releaseVersion -notmatch '^\d+\.\d+\.\d+$') { throw "Informe a versao no formato semver, por exemplo 1.2.0." }
-          npm version $releaseVersion --no-git-tag-version
+          npm version $releaseVersion --no-git-tag-version --allow-same-version
           Write-Output "Versao desta compilacao: $(node -p "require('./package.json').version")"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -60,7 +64,7 @@ jobs:
           $displayVersion = $appVersion -replace '\.0$', ''
           $notesPath = Join-Path $env:RUNNER_TEMP 'wavs-release-notes.md'
           [System.IO.File]::WriteAllText($notesPath, $releaseNotes, [System.Text.UTF8Encoding]::new($false))
-          gh release create "v$appVersion" --draft --title "WavsResolver $displayVersion" --notes-file $notesPath
+          gh release create "v$appVersion" --draft --target $env:GITHUB_SHA --title "WavsResolver $displayVersion" --notes-file $notesPath
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_NOTES: ${{ inputs.release_notes }}

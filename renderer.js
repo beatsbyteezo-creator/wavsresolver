@@ -20,7 +20,11 @@ const appUpdateKicker = document.querySelector('#app-update-kicker');
 const appUpdateMessage = document.querySelector('#app-update-message');
 const appUpdateProgress = document.querySelector('#app-update-progress');
 const appUpdateProgressWrap = document.querySelector('#app-update-progress-wrap');
-const appUpdateMark = document.querySelector('.app-update-mark');
+const appUpdateSignal = document.querySelector('.app-update-signal');
+const appLayout = document.querySelector('.app-layout');
+const sampleSearchResults = document.querySelector('#sample-search-results');
+const sampleSearchList = document.querySelector('#sample-search-list');
+let appUpdatePreviousFocus = null;
 const appUpdateLaterButton = document.querySelector('#app-update-later');
 const appUpdateNowButton = document.querySelector('#app-update-now');
 const loadButton = document.querySelector('#load-button');
@@ -972,6 +976,21 @@ function renderHomeHighlights() {
   });
 }
 
+function renderSearchSamples(visiblePacks) {
+  const packIds = new Set(visiblePacks.map((pack) => String(pack.id)));
+  const samples = globalSearchSamples.filter((sample) => packIds.has(String(sample.pack_id)));
+  sampleSearchResults.classList.toggle('hidden', !samples.length);
+  sampleSearchList.innerHTML = samples.map((sample) => {
+    const details = [sample.pack_title, sample.tempo ? sample.tempo + ' BPM' : ''].filter(Boolean).join(' · ');
+    return `<button class="sample-search-result" type="button" data-sample-pack="${escapeHtml(sample.pack_id)}"><span><strong>${escapeHtml(sample.title || "Sample WAVS")}</strong><small>${escapeHtml(details)}</small></span><span class="sample-search-open">Abrir pack <span aria-hidden="true">↗</span></span></button>`;
+  }).join('');
+}
+
+sampleSearchList.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-sample-pack]');
+  if (button) openPackById(button.dataset.samplePack, true);
+});
+
 function renderCatalog() {
   catalogRenderPending = false;
   syncCustomSelect(catalogPeriodSelect);
@@ -1005,6 +1024,7 @@ function renderCatalog() {
   catalogList.innerHTML = showSkeletons
     ? Array.from({ length: 6 }, () => '<article class="catalog-skeleton" aria-hidden="true"><div class="catalog-skeleton-cover"></div><div class="catalog-skeleton-lines"><span></span><span></span><span></span></div></article>').join('')
     : visiblePacks.map(packCardMarkup).join('');
+  renderSearchSamples(globalSearchMode && !isFavoritesView ? filteredCatalogPacks : []);
   const canLoadSearchPage = globalSearchMode && globalSearchPage < globalSearchLastPage;
   const canLoadGenrePage = discoveryView && genreFilterPage < genreFilterLastPage;
   const canRevealCatalogPacks = !isFavoritesView && !globalSearchMode && !discoveryView && visiblePackCount < filteredCatalogPacks.length;
@@ -1449,6 +1469,9 @@ async function loadDiscoveryPacks(filterId, filterName, page = 1, append = false
 
 function clearPackView() {
   packRequestVersion += 1;
+  loadButton.disabled = false;
+  loadButton.textContent = 'Mostrar pack →';
+  panel.setAttribute('aria-busy', 'false');
   stopBottomPlayer();
   panel.replaceChildren();
   panel.classList.add('hidden');
@@ -2076,7 +2099,8 @@ async function playSample(index) {
   try {
     await bottomPlayerAudio.play();
   } catch (error) {
-    setDownloadStatus(error.message || 'Não foi possível reproduzir esta prévia.', false, presentation);
+    if (error.name === 'AbortError' || filteredSamples[activeSampleIndex] !== sample) return;
+    setDownloadStatus(error.message || 'Não foi possível reproduzir esta prévia.');
   }
 }
 
@@ -2761,22 +2785,20 @@ window.wavsResolver.onAppUpdateStatus((data) => {
     appUpdateDownloadStarted = false;
     appUpdateCardDismissed = false;
     appUpdateTitle.textContent = 'Atualização disponível';
-    appUpdateKicker.textContent = 'ATUALIZAÇÃO';
+    appUpdateKicker.textContent = 'Nova versão';
     appUpdateVersion.textContent = 'Versão ' + formatDisplayVersion(data.version || 'nova');
     appUpdateNotesHeading.textContent = 'Novidades';
     appUpdateNotes.innerHTML = formatReleaseNotes(data.releaseNotes);
     appUpdateProgress.value = 0;
     appUpdateProgressWrap.classList.add('hidden');
-    appUpdateMark.style.setProperty('--update-fill', '0%');
+    appUpdateSignal.style.setProperty('--update-fill', '0%');
     appUpdateMessage.textContent = 'Escolha quando deseja atualizar.';
     appUpdateLaterButton.classList.remove('hidden');
     appUpdateLaterButton.disabled = false;
     appUpdateLaterButton.textContent = 'Mais tarde';
     appUpdateNowButton.disabled = false;
     appUpdateNowButton.textContent = 'Atualizar agora';
-    appUpdateOverlay.classList.remove('hidden');
-    appUpdateOverlay.setAttribute('aria-hidden', 'false');
-    appUpdateLaterButton.focus();
+    showAppUpdateCard(appUpdateNowButton);
   } else if (data.state === 'download-started') {
     appUpdateDownloadStarted = true;
     appUpdateProgressWrap.classList.remove('hidden');
@@ -2788,13 +2810,13 @@ window.wavsResolver.onAppUpdateStatus((data) => {
     const percent = Math.max(0, Math.min(100, Number(data.percent) || 0));
     appUpdateProgressWrap.classList.remove('hidden');
     appUpdateProgress.value = percent;
-    appUpdateMark.style.setProperty('--update-fill', `${percent}%`);
+    appUpdateSignal.style.setProperty('--update-fill', `${percent}%`);
     appUpdateMessage.textContent = 'Baixando a atualização · ' + Math.round(percent) + '%';
     appUpdateLaterButton.textContent = 'Ocultar';
     appUpdateNowButton.disabled = true;
     appUpdateNowButton.textContent = 'Baixando…';
   } else if (data.state === 'downloaded') {
-    appUpdateMark.style.setProperty('--update-fill', '100%');
+    appUpdateSignal.style.setProperty('--update-fill', '100%');
     appUpdateProgress.value = 100;
     appUpdateMessage.textContent = 'Download concluído. Reiniciando para aplicar a atualização…';
     appUpdateNowButton.disabled = true;
@@ -2805,7 +2827,7 @@ window.wavsResolver.onAppUpdateStatus((data) => {
     appUpdateCardMode = 'whats-new';
     appUpdateCardDismissed = false;
     appUpdateTitle.textContent = 'Atualização concluída';
-    appUpdateKicker.textContent = 'NOVIDADES';
+    appUpdateKicker.textContent = 'Versão instalada';
     appUpdateVersion.textContent = 'Versão ' + formatDisplayVersion(data.version || 'atual');
     appUpdateNotesHeading.textContent = 'O que há de novo';
     appUpdateNotes.innerHTML = formatReleaseNotes(data.releaseNotes);
@@ -2813,9 +2835,8 @@ window.wavsResolver.onAppUpdateStatus((data) => {
     appUpdateLaterButton.classList.add('hidden');
     appUpdateNowButton.disabled = false;
     appUpdateNowButton.textContent = 'Entendi';
-    appUpdateOverlay.classList.remove('hidden');
-    appUpdateOverlay.setAttribute('aria-hidden', 'false');
-    appUpdateNowButton.focus();
+    appUpdateSignal.style.setProperty('--update-fill', '100%');
+    showAppUpdateCard(appUpdateNowButton);
   } else if (data.state === 'error') {
     if (!appUpdateOverlay.classList.contains('hidden') && !appUpdateCardDismissed) {
       appUpdateDownloadStarted = false;
@@ -2832,10 +2853,21 @@ window.wavsResolver.onAppUpdateStatus((data) => {
   }
 });
 
+function showAppUpdateCard(initialFocus) {
+  if (appUpdateOverlay.classList.contains('hidden')) appUpdatePreviousFocus = document.activeElement;
+  appLayout.inert = true;
+  appUpdateOverlay.classList.remove('hidden');
+  appUpdateOverlay.setAttribute('aria-hidden', 'false');
+  initialFocus.focus();
+}
+
 function dismissAppUpdateCard() {
+  appLayout.inert = false;
   appUpdateCardDismissed = true;
   appUpdateOverlay.classList.add('hidden');
   appUpdateOverlay.setAttribute('aria-hidden', 'true');
+  appUpdatePreviousFocus?.focus();
+  appUpdatePreviousFocus = null;
   if (appUpdateCardMode === 'whats-new') window.wavsResolver.acknowledgeAppUpdate().catch(() => {});
 }
 
@@ -2861,7 +2893,17 @@ appUpdateNowButton.addEventListener('click', async () => {
   }
 });
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && !appUpdateOverlay.classList.contains('hidden')) dismissAppUpdateCard();
+  if (appUpdateOverlay.classList.contains('hidden')) return;
+  if (event.key === 'Escape') {
+    if (!appUpdateLaterButton.disabled) dismissAppUpdateCard();
+    return;
+  }
+  if (event.key !== 'Tab') return;
+  const controls = [appUpdateNotes, appUpdateLaterButton, appUpdateNowButton].filter((control) => !control.disabled && !control.classList.contains('hidden'));
+  const index = controls.indexOf(document.activeElement);
+  const next = index < 0 ? (event.shiftKey ? controls.length - 1 : 0) : (index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length;
+  event.preventDefault();
+  controls[next]?.focus();
 });
 window.wavsResolver.getAppVersion().then((version) => {
   appVersionLabel.textContent = `v${formatDisplayVersion(version)}`;

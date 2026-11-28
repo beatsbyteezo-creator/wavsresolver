@@ -61,6 +61,7 @@
         </div>
         <div class="catalog-active-filters"><div id="active-filter-list" class="active-filter-list" aria-live="polite"></div><button id="clear-catalog-filters" class="clear-filters hidden" type="button">Limpar filtros</button></div>
         <p id="catalog-status" class="catalog-status" aria-live="polite">Carregando packs novos…</p>
+        <section id="sample-search-results" class="sample-search-results hidden" aria-labelledby="sample-search-heading"><h2 id="sample-search-heading">Samples encontradas</h2><div id="sample-search-list" class="sample-search-list"></div></section>
         <div id="catalog-list" class="catalog-list"></div>
         <p id="catalog-empty" class="catalog-empty hidden">Nenhum pack encontrado. Tente mudar os filtros.</p>
         <button id="catalog-more" class="catalog-more hidden" type="button">Mostrar mais packs</button>
@@ -71,12 +72,14 @@
     </main>
   </div>
   <div id="app-update-overlay" class="app-update-overlay hidden" aria-hidden="true">
-    <section class="app-update-card" role="dialog" aria-modal="true" aria-labelledby="app-update-title" aria-describedby="app-update-version app-update-notes-text">
-      <div class="app-update-brand"><span class="app-update-mark" aria-hidden="true"><span class="app-update-mark-base">W</span><span class="app-update-mark-fill">W</span></span><span>Wavs<span>Resolver</span></span><span id="app-update-kicker" class="app-update-kicker">ATUALIZAÇÃO</span></div>
-      <h2 id="app-update-title">Atualização disponível</h2>
-      <p id="app-update-version" class="app-update-version">Versão -</p>
-      <div class="app-update-notes"><h3 id="app-update-notes-heading">Novidades</h3><div id="app-update-notes-text" class="app-update-notes-content"></div></div>
-      <div id="app-update-progress-wrap" class="app-update-progress-wrap hidden"><progress id="app-update-progress" max="100" value="0"></progress><p id="app-update-message" aria-live="polite">Escolha quando deseja atualizar.</p></div>
+    <section class="app-update-card" role="dialog" aria-modal="true" aria-labelledby="app-update-title" aria-describedby="app-update-version">
+      <header class="app-update-hero">
+        <div class="app-update-brand"><img src="wavs.png" alt="" width="28" height="28"><span>WavsResolver</span></div>
+        <div class="app-update-heading"><p id="app-update-kicker" class="app-update-kicker">Nova versão</p><h2 id="app-update-title">Atualização disponível</h2><p id="app-update-version" class="app-update-version"></p></div>
+        <div class="app-update-signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </header>
+      <div class="app-update-notes"><h3 id="app-update-notes-heading">Novidades</h3><div id="app-update-notes-text" class="app-update-notes-content" tabindex="0"></div></div>
+      <div id="app-update-progress-wrap" class="app-update-progress-wrap hidden"><progress aria-label="Progresso do download da atualização" id="app-update-progress" max="100" value="0"></progress><p id="app-update-message" aria-live="polite">Escolha quando deseja atualizar.</p></div>
       <div class="app-update-actions"><button id="app-update-later" class="app-update-later" type="button">Mais tarde</button><button id="app-update-now" class="app-update-now" type="button">Atualizar agora</button></div>
     </section>
   </div>
