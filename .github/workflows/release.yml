@@ -7,16 +7,16 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.7"
+        default: "1.2.8"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - Verificação de versão assim que o app abre.
-          - Atualizações obrigatórias antes de entrar no catálogo.
-          - Botão para tentar novamente se a verificação ou a instalação falhar.
+          - Home e rolagem com reaproveitamento dos cards e carregamento independente da faixa de recentes.
+          - Novo fundo fosco, capas e retratos maiores e carregamento de packs redesenhado.
+          - A prévia segue tocando ao abrir o pack. A verificação de atualização acontece em segundo plano.
 
 permissions:
   contents: write

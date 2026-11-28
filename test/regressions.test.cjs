@@ -50,6 +50,7 @@ test('sair do pack restaura o botão mesmo com uma requisição pendente', async
   const classList = { add() {}, remove() {} };
   const ctx = vm.createContext({
     packRequestVersion: 0,
+    activePackPreviewId: null,
     currentPack: null,
     stopBottomPlayer() {},
     stopPackHoverPreview() {},
@@ -144,7 +145,7 @@ test('a checagem obrigatória começa sem atraso e permite tentar novamente apó
   assert.deepEqual(messages, ['checking', 'check-error', 'checking', 'available']);
 });
 
-test('o catálogo só inicia após confirmar a versão e não reinicia em checagens periódicas', () => {
+test('o catálogo inicia durante a verificação silenciosa e não reinicia após confirmação', () => {
   const layout = { inert: true };
   let catalogRequests = 0;
   const code = section('renderer.js', 'function openCatalogAfterUpdateCheck()', 'window.wavsResolver.onAppUpdateStatus(');
@@ -161,7 +162,7 @@ test('o catálogo só inicia após confirmar a versão e não reinicia em checag
   vm.runInContext(code, ctx);
   assert.equal(layout.inert, true);
   assert.equal(catalogRequests, 0);
-  vm.runInContext("renderAppUpdateStatus({ state: 'current' }); renderAppUpdateStatus({ state: 'current' });", ctx);
+  vm.runInContext("renderAppUpdateStatus({ state: 'checking' }); renderAppUpdateStatus({ state: 'current' });", ctx);
   assert.equal(layout.inert, false);
   assert.equal(catalogRequests, 2);
 });

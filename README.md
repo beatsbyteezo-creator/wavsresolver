@@ -1,6 +1,6 @@
 # WavsResolver
 
-**Versão do projeto: 1.2.7.**
+**Versão do projeto: 1.2.8.**
 
 Aplicativo Windows para explorar packs públicos do WAVS, ouvir previews e baixar arquivos MP3.
 
@@ -8,7 +8,7 @@ Aplicativo Windows para explorar packs públicos do WAVS, ouvir previews e baixa
 
 Baixe o instalador Windows x64 na página de [Releases](https://github.com/beatsbyteezo-creator/wavsresolver/releases/latest) e execute-o. A instalação é por usuário e cria atalhos no Menu Iniciar e na área de trabalho. O app precisa de internet para acessar o catálogo WAVS.
 
-O app verifica a versão assim que abre. Se houver atualização, é preciso instalá-la antes de entrar. O download acontece dentro do app e a instalação reinicia o WavsResolver. Se a verificação falhar, confira sua conexão e selecione **Tentar novamente**.
+O app verifica a versão assim que abre. Se houver atualização, é preciso instalá-la antes de entrar. O download acontece dentro do app e a instalação reinicia o WavsResolver. A verificação acontece em segundo plano e o aviso aparece quando há uma atualização disponível.
 
 O instalador ainda não tem assinatura digital; o Windows pode exibir um aviso na primeira execução.
 

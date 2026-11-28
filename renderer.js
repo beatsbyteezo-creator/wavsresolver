@@ -722,10 +722,10 @@ function bindPackHoverPreview(card) {
   });
 }
 function bindPackOpenButtons(container) {
-  container.querySelectorAll('.catalog-card').forEach(bindPackHoverPreview);
+  if (container.matches('.catalog-card')) bindPackHoverPreview(container);
+  else container.querySelectorAll('.catalog-card').forEach(bindPackHoverPreview);
   container.querySelectorAll('.catalog-open').forEach((button) => {
     button.addEventListener('click', () => {
-      stopPackHoverPreview();
       openPackById(button.dataset.packId, true);
     });
   });
@@ -912,31 +912,72 @@ async function toggleFavoritePack(packId) {
   }
 }
 
-function observeHomePackCards(container) {
-  if (!container || window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
-  const cards = container.querySelectorAll('.catalog-card[data-pack-id]');
-  if (!cards.length) return;
-  if (!homeRevealObserver) {
-    homeRevealObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => entry.target.classList.toggle('home-revealed', entry.isIntersecting));
-    }, { root: appShell, threshold: 0.08, rootMargin: '0px 0px -28px 0px' });
-  }
-  cards.forEach((card) => {
-    card.classList.add('home-reveal-pending');
-    homeRevealObserver.observe(card);
-  });
+function observeHomePackCard(card) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+  homeRevealObserver ??= new IntersectionObserver((entries, observer) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add('home-revealed');
+      observer.unobserve(entry.target);
+    }
+  }, { root: appShell, threshold: 0.08 });
+  card.classList.add('home-reveal-pending');
+  homeRevealObserver.observe(card);
 }
+
+function renderPackCards(container, packs, { reveal = false, skeleton = false } = {}) {
+  const previous = new Map([...container.children].filter((card) => card.dataset.packId).map((card) => [card.dataset.packId, card]));
+  const rendered = new Set();
+  let index = 0;
+  for (const pack of packs) {
+    const id = String(pack.id);
+    if (rendered.has(id)) continue;
+    rendered.add(id);
+    const markup = packCardMarkup(pack);
+    const oldCard = previous.get(id);
+    let card = oldCard;
+    if (card?.packMarkup !== markup) {
+      const template = document.createElement('template');
+      template.innerHTML = markup;
+      card = template.content.firstElementChild;
+      card.packMarkup = markup;
+      bindPackOpenButtons(card);
+      if (oldCard) {
+        homeRevealObserver?.unobserve(oldCard);
+        oldCard.replaceWith(card);
+      } else if (reveal) observeHomePackCard(card);
+    }
+    if (container.children[index] !== card) container.insertBefore(card, container.children[index] || null);
+    index += 1;
+  }
+  if (skeleton && index === 0) {
+    if (!container.firstElementChild?.classList.contains('catalog-skeleton')) {
+      renderPackCards(container, []);
+      container.innerHTML = catalogSkeletonMarkup;
+    }
+    return;
+  }
+  while (container.children.length > index) {
+    homeRevealObserver?.unobserve(container.lastElementChild);
+    container.lastElementChild.remove();
+  }
+}
+
+const catalogSkeletonMarkup = Array.from({ length: 6 }, () => '<article class="catalog-skeleton" aria-hidden="true"><div class="catalog-skeleton-cover"></div><div class="catalog-skeleton-lines"><span></span><span></span><span></span></div></article>').join('');
 function renderHomeHighlights() {
   const showHighlights = catalogView === 'explore' && !globalSearchMode && !creatorProfile && !creatorProfileLoading && !creatorProfileError;
   const hasPacks = showHighlights && catalogPacks.length > 0;
-  featuredPackSection.classList.toggle('hidden', !hasPacks);
-  recentShelf.classList.toggle('hidden', !hasPacks);
+  const awaitingPacks = showHighlights && catalogRefreshInFlight && !hasPacks;
+  featuredPackSection.classList.toggle('hidden', !hasPacks && !awaitingPacks);
+  featuredPackSection.classList.toggle('featured-loading', awaitingPacks);
+  recentShelf.classList.toggle('hidden', !hasPacks && !awaitingPacks);
+  if (awaitingPacks) { renderPackCards(recentList, [], { skeleton: true }); return; }
   if (!hasPacks) return;
 
   const featured = catalogPacks[featuredPackIndex % catalogPacks.length];
   const cover = catalogCoverUrl(featured);
   const saved = favoritePacks.some((favorite) => String(favorite.id) === String(featured.id));
-  featuredPackSection.innerHTML = `
+  const featuredMarkup = `
     <article class="featured-pack">
       <div class="featured-art">
         ${cover ? `<img class="featured-cover" src="${escapeHtml(cover)}" alt="" loading="eager">` : '<div class="featured-art-fallback">W</div>'}
@@ -952,19 +993,16 @@ function renderHomeHighlights() {
         </div>
       </div>
     </article>`;
-  const recent = catalogPacks.slice(0, 16);
-  recentList.innerHTML = recent.map(packCardMarkup).join('');
-  observeHomePackCards(recentList);
+  renderPackCards(recentList, catalogPacks.slice(0, 16), { reveal: true });
   const genres = getCatalogGenres(catalogPacks).slice(0, 8);
   recentGenres.innerHTML = `<button class="genre-pill${!catalogGenreSelect.value || genreFilterId === 'all' ? ' is-active' : ''}" type="button" data-genre="">Todos</button>${genres.map((genre) => `<button class="genre-pill${catalogGenreSelect.value === genre ? ' is-active' : ''}" type="button" data-genre="${escapeHtml(genre)}">${escapeHtml(genre)}</button>`).join('')}`;
-  bindPackOpenButtons(recentList);
-  featuredPackSection.querySelector('.featured-open').addEventListener('click', (event) => {
-    stopPackHoverPreview();
-    openPackById(event.currentTarget.dataset.packId, true);
-  });
-  featuredPackSection.querySelector('.favorite-pack-button').addEventListener('click', (event) => toggleFavoritePack(event.currentTarget.dataset.packId));
+  if (featuredPackSection.packMarkup !== featuredMarkup) {
+    featuredPackSection.innerHTML = featuredMarkup;
+    featuredPackSection.packMarkup = featuredMarkup;
+    bindFeaturedPack();
+  }
   recentGenres.querySelectorAll('.genre-pill').forEach((button) => {
-    button.addEventListener('click', () => {
+    button.onclick = () => {
       if (!button.dataset.genre) {
         catalogGenreSelect.value = '';
         loadDiscoveryPacks('all', 'Todos os packs');
@@ -972,8 +1010,16 @@ function renderHomeHighlights() {
       }
       catalogGenreSelect.value = button.dataset.genre;
       catalogGenreSelect.dispatchEvent(new Event('change'));
-    });
+    };
   });
+}
+
+function bindFeaturedPack() {
+  featuredPackSection.querySelector('.featured-open').addEventListener('click', (event) => {
+    openPackById(event.currentTarget.dataset.packId, true);
+  });
+  featuredPackSection.querySelector('.favorite-pack-button').addEventListener('click', (event) => toggleFavoritePack(event.currentTarget.dataset.packId));
+
 }
 
 function renderSearchSamples(visiblePacks) {
@@ -995,7 +1041,6 @@ function renderCatalog() {
   catalogRenderPending = false;
   syncCustomSelect(catalogPeriodSelect);
   syncCustomSelect(catalogSortSelect);
-  stopPackHoverPreview();
   const query = catalogSearchInput.value.trim().toLocaleLowerCase();
   const selectedGenre = catalogGenreSelect.value.toLocaleLowerCase();
   const periodDays = Number(catalogPeriodSelect.value) || null;
@@ -1021,9 +1066,7 @@ function renderCatalog() {
     globalSearchLoading || genreFilterLoading
     || (catalogRefreshInFlight && !catalogPacks.length && !isFavoritesView && !globalSearchMode)
   );
-  catalogList.innerHTML = showSkeletons
-    ? Array.from({ length: 6 }, () => '<article class="catalog-skeleton" aria-hidden="true"><div class="catalog-skeleton-cover"></div><div class="catalog-skeleton-lines"><span></span><span></span><span></span></div></article>').join('')
-    : visiblePacks.map(packCardMarkup).join('');
+  renderPackCards(catalogList, showSkeletons ? [] : visiblePacks, { skeleton: showSkeletons, reveal: !isFavoritesView && !globalSearchMode });
   renderSearchSamples(globalSearchMode && !isFavoritesView ? filteredCatalogPacks : []);
   const canLoadSearchPage = globalSearchMode && globalSearchPage < globalSearchLastPage;
   const canLoadGenrePage = discoveryView && genreFilterPage < genreFilterLastPage;
@@ -1102,12 +1145,8 @@ function renderCatalog() {
     catalogStatus.textContent = 'Nenhum pack novo encontrado.';
     catalogStatus.setAttribute('aria-busy', 'false');
   }
-  bindPackOpenButtons(catalogList);
   renderActiveFilters();
   renderHomeHighlights();
-  if (catalogView === 'explore' && !globalSearchMode && !creatorProfile && !creatorProfileLoading && !creatorProfileError) {
-    observeHomePackCards(catalogList);
-  }
 }
 
 function renderCreatorProfile() {
@@ -1357,9 +1396,11 @@ async function loadNewPacks({ quiet = false } = {}) {
     catalogTotal = Number(result.total) || catalogPacks.length;
     catalogPageError = false;
     updateCatalogGenreOptions();
-    if (addedCount > 0) {
-      if (canShowCatalogRefreshStatus() && appShell.scrollTop <= 2) renderCatalog();
-      else catalogRenderPending = true;
+    if (addedCount > 0 && canShowCatalogRefreshStatus() && appShell.scrollTop <= 2) {
+      renderCatalog();
+    } else {
+      renderHomeHighlights();
+      if (addedCount > 0 && !genreFilterId) catalogRenderPending = true;
     }
     const updatedAt = new Date();
     if (canShowCatalogRefreshStatus()) {
@@ -1376,6 +1417,7 @@ async function loadNewPacks({ quiet = false } = {}) {
     }
   } finally {
     catalogRefreshInFlight = false;
+    if (!catalogPacks.length) renderHomeHighlights();
     if (!catalogPacks.length && !globalSearchMode && catalogView !== 'favorites' && !genreFilterLoading) {
       catalogList.replaceChildren();
     }
@@ -1628,7 +1670,8 @@ window.addEventListener('popstate', (event) => {
 });
 
 async function openPack(link, scrollToPack = false, updateHistory = true) {
-  stopPackHoverPreview();
+  const keepPreview = Boolean(activePackPreviewId && getPackIdFromLink(link) === activePackPreviewId && bottomPlayerAudio.src);
+  if (!keepPreview) stopPackHoverPreview();
   const requestVersion = ++packRequestVersion;
   const previousView = history.state?.wavsResolverPackView
     ? history.state.wavsResolverPreviousView
@@ -1638,8 +1681,8 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
   input.value = link;
   loadButton.disabled = true;
   loadButton.innerHTML = loadingIndicatorMarkup('Carregando…', 'loading-indicator-compact');
-  stopBottomPlayer();
-  panel.innerHTML = loadingIndicatorMarkup('Carregando o pack e a lista de samples…', 'loading-indicator-card');
+  if (!keepPreview) stopBottomPlayer();
+  panel.innerHTML = '<div class="pack-loading" role="status"><div class="pack-loading-art" aria-hidden="true"></div><div class="pack-loading-copy"><span class="pack-loading-title" aria-hidden="true"></span><span class="pack-loading-line" aria-hidden="true"></span><span class="pack-loading-line" aria-hidden="true"></span><p>Carregando pack e samples…</p></div></div>';
   panel.setAttribute('aria-busy', 'true');
   panel.classList.remove('hidden');
   document.body.classList.add('pack-view-active');
@@ -1690,6 +1733,11 @@ async function openPack(link, scrollToPack = false, updateHistory = true) {
       loadButton.textContent = loadButtonLabel;
     }
   }
+}
+
+function getPackIdFromLink(link) {
+  try { return new URL(link).pathname.match(/^\/packs\/(\d+)(?:\/|$)/)?.[1]; }
+  catch { return null; }
 }
 
 function openPackById(packId, scrollToPack = false, updateHistory = true) {
@@ -1997,16 +2045,23 @@ function updateBottomPlayer() {
   } else if (!playerAnimationFrame) playerAnimationFrame = requestAnimationFrame(animatePlayerFrame);
 }
 
+let lastWaveformFrame = 0;
 function animatePlayerFrame(timestamp) {
   playerAnimationFrame = 0;
   if (bottomPlayerAudio.paused || !bottomPlayerAudio.src || document.visibilityState !== 'visible') return;
   const duration = Number.isFinite(bottomPlayerAudio.duration) ? bottomPlayerAudio.duration : 0;
   const progress = duration ? bottomPlayerAudio.currentTime / duration : 0;
+  if (timestamp - lastWaveformFrame < 30) {
+    playerAnimationFrame = requestAnimationFrame(animatePlayerFrame);
+    return;
+  }
+  lastWaveformFrame = timestamp;
   drawWaveform(bottomPlayerWaveform, bottomPlayerWaveform.waveformPeaks, bottomPlayerWaveform.waveformPeaks ? progress : -1);
   const activePackWaveform = panel.querySelector(`.sample-waveform[data-sample-index="${activeSampleIndex}"]`);
   if (activePackWaveform?.waveformPeaks) {
     drawWaveform(activePackWaveform, activePackWaveform.waveformPeaks, progress);
-    activePackWaveform.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
+    const value = String(Math.round(progress * 100));
+    if (activePackWaveform.getAttribute('aria-valuenow') !== value) activePackWaveform.setAttribute('aria-valuenow', value);
   }
   const timeText = `${formatTime(bottomPlayerAudio.currentTime)} / ${formatTime(duration)}`;
   if (bottomPlayerTime.textContent !== timeText) bottomPlayerTime.textContent = timeText;
@@ -2155,7 +2210,7 @@ function filterPackSamples() {
   const query = sampleSearchInput.value.trim().toLocaleLowerCase();
   const sampleList = panel.querySelector('.sample-list');
   currentSamplePage = 0;
-  stopBottomPlayer();
+  if (activeSampleIndex >= 0) stopBottomPlayer();
   sampleList.replaceChildren();
   filteredSamples = currentPack.samples.filter((sample) => {
     const title = String(sample.title || '').toLocaleLowerCase();
@@ -2171,7 +2226,6 @@ function filterPackSamples() {
 }
 
 function renderPack(result) {
-  stopBottomPlayer();
   const pack = result.pack;
   currentPack = result;
   currentSamplePage = 0;
@@ -2548,7 +2602,8 @@ let outsideWheelDelta = 0;
 let outsideWheelFrame = 0;
 function forwardOutsideWheel(event) {
   if (!event.deltaY || event.ctrlKey || event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-  if (event.target.closest?.('#bottom-player input[type="range"]')) return;
+  if (event.defaultPrevented || appLayout.inert || event.target.closest?.('input, select, textarea, [role="listbox"]')) return;
+  if (appShell.scrollHeight <= appShell.clientHeight) return;
   const delta = event.deltaMode === 1
     ? event.deltaY * 16
     : event.deltaMode === 2
@@ -2795,8 +2850,9 @@ function renderAppUpdateStatus(data) {
   const previousState = appUpdateState;
   appUpdateState = data.state;
   appUpdateOverlay.dataset.state = data.state;
-  if (data.state === 'current') {
+  if (['checking', 'check-error', 'current', 'applied'].includes(data.state)) {
     openCatalogAfterUpdateCheck();
+    if (data.state === 'applied') window.wavsResolver.acknowledgeAppUpdate().catch(() => {});
     return;
   }
 
@@ -2805,34 +2861,28 @@ function renderAppUpdateStatus(data) {
   appUpdateOverlay.classList.remove('hidden');
   appUpdateOverlay.setAttribute('aria-hidden', 'false');
   if (data.version) appUpdateVersion.textContent = 'Versão ' + formatDisplayVersion(data.version);
-  const checking = data.state === 'checking';
-  const checkFailed = data.state === 'check-error';
-  const applied = data.state === 'applied';
   const manual = data.state === 'manual';
   const downloadFailed = data.state === 'download-error';
   const installFailed = data.state === 'install-error';
   const installing = data.state === 'downloaded';
   const downloading = ['download-started', 'progress'].includes(data.state);
-  const busy = checking || downloading || installing;
-  const showNotes = !checking && !checkFailed;
-  appUpdateKicker.textContent = applied ? 'Versão instalada' : showNotes ? 'Nova versão' : 'Inicialização';
-  appUpdateTitle.textContent = checking ? 'Verificando atualizações' : checkFailed ? 'Falha na verificação' : applied ? 'Atualização concluída' : 'Atualização obrigatória';
-  appUpdateNotesPanel.classList.toggle('hidden', !showNotes);
-  appUpdateNotesHeading.textContent = applied ? 'O que há de novo' : 'Novidades';
-  if (showNotes && (typeof data.releaseNotes === 'string' && data.releaseNotes !== appUpdateNotes.dataset.releaseNotes)) {
+  const busy = downloading || installing;
+  appUpdateKicker.textContent = 'Nova versão';
+  appUpdateTitle.textContent = 'Atualização obrigatória';
+  appUpdateNotesPanel.classList.remove('hidden');
+  appUpdateNotesHeading.textContent = 'Novidades';
+  if (typeof data.releaseNotes === 'string' && data.releaseNotes !== appUpdateNotes.dataset.releaseNotes) {
     appUpdateNotes.innerHTML = formatReleaseNotes(data.releaseNotes);
     appUpdateNotes.dataset.releaseNotes = data.releaseNotes;
   }
 
-  const percent = applied || installing || installFailed ? 100 : Math.max(0, Math.min(100, Number(data.percent) || 0));
+  const percent = installing || installFailed ? 100 : Math.max(0, Math.min(100, Number(data.percent) || 0));
   appUpdateSignal.style.setProperty('--update-fill', percent + '%');
-  if (checking || data.state === 'download-started') appUpdateProgress.removeAttribute('value');
+  if (data.state === 'download-started') appUpdateProgress.removeAttribute('value');
   else appUpdateProgress.value = percent;
   appUpdateProgress.classList.toggle('hidden', !busy && !downloadFailed && !installFailed);
-  appUpdateProgressWrap.classList.toggle('hidden', applied);
-  appUpdateMessage.textContent = data.message || (checking ? 'Consultando a versão mais recente.'
-    : checkFailed ? 'Confira sua conexão e tente novamente para entrar no app.'
-    : manual ? 'Instale a versão mais recente pelo GitHub para entrar no app.'
+  appUpdateProgressWrap.classList.remove('hidden');
+  appUpdateMessage.textContent = data.message || (manual ? 'Instale a versão mais recente pelo GitHub para entrar no app.'
     : installing ? 'Instalando a atualização e reiniciando…'
     : installFailed ? 'A instalação falhou. Tente novamente para continuar.'
     : downloadFailed ? 'O download falhou. Tente novamente para continuar.'
@@ -2842,27 +2892,22 @@ function renderAppUpdateStatus(data) {
 
   appUpdateNowButton.classList.toggle('hidden', busy);
   appUpdateNowButton.disabled = busy;
-  appUpdateNowButton.textContent = applied ? 'Entrar no app' : manual ? 'Abrir GitHub'
-    : checkFailed || downloadFailed || installFailed ? 'Tentar novamente' : 'Atualizar agora';
+  appUpdateNowButton.textContent = manual ? 'Abrir GitHub'
+    : downloadFailed || installFailed ? 'Tentar novamente' : 'Atualizar agora';
   if (previousState !== data.state || !appUpdateCard.contains(document.activeElement)) {
     (busy ? appUpdateCard : appUpdateNowButton).focus();
   }
 }
 
 window.wavsResolver.onAppUpdateStatus(renderAppUpdateStatus);
-appUpdateCard.focus();
+openCatalogAfterUpdateCheck();
 appUpdateNowButton.addEventListener('click', async () => {
   if (appUpdateNowButton.disabled) return;
   appUpdateNowButton.disabled = true;
   const state = appUpdateState;
   try {
-    if (state === 'applied') {
-      const result = await window.wavsResolver.acknowledgeAppUpdate();
-      if (!result?.ok) throw new Error('Não foi possível confirmar a atualização.');
-    } else if (state === 'manual') {
+    if (state === 'manual') {
       await window.wavsResolver.openAppUpdateRelease();
-    } else if (state === 'check-error') {
-      await window.wavsResolver.retryAppUpdateCheck();
     } else {
       const result = await window.wavsResolver.downloadAppUpdate();
       if (!result?.ok && appUpdateState !== 'download-error') {

@@ -11,7 +11,7 @@
   <script src="renderer.js" defer></script>
 </head>
 <body data-theme="dark">
-  <div class="app-layout" inert>
+  <div class="app-layout">
     <aside class="app-sidebar" aria-label="Navegação principal">
       <a class="sidebar-brand" href="#top" aria-label="WavsResolver, início"><span class="brand-mark">W</span><span>Wavs<span class="brand-light">Resolver</span></span></a>
       <nav class="sidebar-navigation">
@@ -71,15 +71,15 @@
     <footer><span>Metadados e prévias do catálogo público do WAVS.</span><span>Baixe as prévias MP3 disponíveis diretamente para a pasta escolhida.</span><span class="app-credit">Developed by Nyo and White</span></footer>
     </main>
   </div>
-  <div id="app-update-overlay" class="app-update-overlay" aria-hidden="false" data-state="checking">
+  <div id="app-update-overlay" class="app-update-overlay hidden" aria-hidden="true" data-state="current">
     <section class="app-update-card" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="app-update-title" aria-describedby="app-update-version">
       <header class="app-update-hero">
-        <div class="app-update-brand"><img src="wavs.png" alt="" width="28" height="28"><span>WavsResolver</span></div>
-        <div class="app-update-heading"><p id="app-update-kicker" class="app-update-kicker">Inicialização</p><h2 id="app-update-title">Verificando atualizações</h2><p id="app-update-version" class="app-update-version"></p></div>
+        <div class="app-update-brand"><span class="app-update-brand-mark" aria-hidden="true">W</span><span>WavsResolver</span></div>
+        <div class="app-update-heading"><p id="app-update-kicker" class="app-update-kicker">Nova versão</p><h2 id="app-update-title">Atualização obrigatória</h2><p id="app-update-version" class="app-update-version"></p></div>
         <div class="app-update-signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       </header>
       <div class="app-update-notes hidden"><h3 id="app-update-notes-heading">Novidades</h3><div id="app-update-notes-text" class="app-update-notes-content" tabindex="0"></div></div>
-      <div id="app-update-progress-wrap" class="app-update-progress-wrap"><progress aria-label="Progresso do download da atualização" id="app-update-progress" max="100"></progress><p id="app-update-message" aria-live="polite">Consultando a versão mais recente.</p></div>
+      <div id="app-update-progress-wrap" class="app-update-progress-wrap"><progress aria-label="Progresso do download da atualização" id="app-update-progress" max="100"></progress><p id="app-update-message" aria-live="polite">Atualize para continuar usando o WavsResolver.</p></div>
       <div class="app-update-actions"><button id="app-update-now" class="app-update-now hidden" type="button">Atualizar agora</button></div>
     </section>
   </div>
