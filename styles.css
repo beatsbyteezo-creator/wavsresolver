@@ -3413,14 +3413,12 @@ body[data-theme="dark"] :is(.catalog-search, .sample-search) input::placeholder 
 }
 body[data-theme] .bottom-player { border-color: transparent; box-shadow: 0 12px 36px #100b2526; }
 
-.download-status .download-progress-track { position: relative; grid-column: 2; grid-row: 2; align-self: center; min-width: 0; height: 2px; overflow: hidden; border-radius: 99px; background: #9487ac45; }
+.download-status .download-progress-track { position: relative; grid-column: 2; grid-row: 2; align-self: center; min-width: 0; height: 2px; overflow: hidden; border-radius: 99px; }
 .download-progress-track:has(.download-progress-bar.hidden) { display: none; }
-.download-status .download-progress-track .download-progress-bar { position: absolute; inset: 0; display: block; height: 100%; margin: 0; background: transparent; }
-.download-status .download-progress-track .download-progress-bar::-webkit-progress-bar { background: transparent; }
-.download-status .download-progress-track .download-progress-bar::-webkit-progress-value { background: #9f8abc65; }
+.download-status .download-progress-track .download-progress-bar { position: absolute; inset: 0; display: block; opacity: 0; height: 100%; margin: 0; background: transparent; }
 .download-progress-track::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 45%; border-radius: inherit; background: linear-gradient(90deg, transparent, #c5a8f6, transparent); animation: pack-loading-glide 1.2s ease-in-out infinite; pointer-events: none; }
 body[data-theme="light"] .download-progress-track::after { background: linear-gradient(90deg, transparent, #7349a8, transparent); }
-@media (prefers-reduced-motion: reduce) { .download-progress-track::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .download-progress-track::after { animation: none; inset-inline-start: 27.5%; } }
 
 .samples-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin-block: 20px 6px; }
 .samples-pagination button { min-height: 37px; padding: 0 13px; border-radius: 10px; background: #d7c4fc22; color: #f4effb; font-size: 12px; font-weight: 650; }

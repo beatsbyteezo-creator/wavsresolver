@@ -7,16 +7,14 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.10"
+        default: "1.2.11"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - Fundo distribuído pela janela e contornos de painéis suavizados.
-          - Rolagem nas margens, paginação refinada e controles do player separados da forma de onda.
-          - Downloads com a mesma animação discreta de abertura dos packs.
+          - O aviso de download mostra apenas o brilho animado, sem a linha fixa por baixo.
 
 permissions:
   contents: write
