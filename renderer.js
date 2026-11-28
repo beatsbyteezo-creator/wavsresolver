@@ -2735,7 +2735,6 @@ window.addEventListener('focus', () => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') {
-    stopPackHoverPreview();
     cancelAnimationFrame(playerAnimationFrame);
     playerAnimationFrame = 0;
   } else if (!bottomPlayerAudio.paused && bottomPlayerAudio.src && !playerAnimationFrame) {

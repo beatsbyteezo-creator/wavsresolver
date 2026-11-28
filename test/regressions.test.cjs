@@ -192,3 +192,33 @@ test('a faixa de recém-lançados ordena do mais novo ao mais antigo', () => {
   assert.deepEqual(Array.from(sorted, (pack) => pack.id), [3, 4, 1, 2]);
   assert.deepEqual(packs.map((pack) => pack.id), [1, 2, 3, 4]);
 });
+
+test('ocultar a janela suspende o desenho do player e mantém a prévia tocando', () => {
+  const visibility = section('renderer.js', "document.addEventListener('visibilitychange'", 'function syncPlayerVolumeControl()');
+  const audio = { paused: false, src: 'https://cdn.wavs.com/preview.mp3' };
+  const document = {
+    visibilityState: 'hidden',
+    addEventListener(_name, handler) { this.handleVisibility = handler; }
+  };
+  const cancelled = [];
+  const context = vm.createContext({
+    document,
+    bottomPlayerAudio: audio,
+    playerAnimationFrame: 7,
+    lastCatalogRefreshAt: Date.now(),
+    animatePlayerFrame() {},
+    cancelAnimationFrame: (id) => cancelled.push(id),
+    requestAnimationFrame: () => 8,
+    stopPackHoverPreview() { audio.paused = true; audio.src = ''; }
+  });
+  vm.runInContext(visibility, context);
+  document.handleVisibility();
+  assert.deepEqual(cancelled, [7]);
+  assert.equal(context.playerAnimationFrame, 0);
+  assert.equal(audio.paused, false);
+  assert.match(audio.src, /preview\.mp3$/);
+
+  document.visibilityState = 'visible';
+  document.handleVisibility();
+  assert.equal(context.playerAnimationFrame, 8);
+});

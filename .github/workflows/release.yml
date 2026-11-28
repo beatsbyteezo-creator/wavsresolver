@@ -7,16 +7,15 @@ on:
         description: "Versão desta publicação"
         required: true
         type: string
-        default: "1.2.12"
+        default: "1.2.13"
       release_notes:
         description: "Notas que aparecerão no card de atualização"
         required: true
         type: string
         default: |
           ## Novidades
-          - Recém-lançados usa o catálogo completo, do mais novo ao mais antigo.
-          - A faixa carrega mais packs ao chegar ao fim, sem duplicatas.
-          - Fundo com brilho reduzido nos dois temas.
+          - A prévia continua tocando quando você alterna para outro aplicativo.
+          - Fundo mais suave nos temas claro e escuro.
 
 permissions:
   contents: write
